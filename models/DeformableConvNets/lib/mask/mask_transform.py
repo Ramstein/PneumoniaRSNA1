@@ -30,7 +30,7 @@ def intersect_box_mask(ex_box, gt_box, gt_mask):
     ex_starty = y1 - ex_box[1]
     ex_startx = x1 - ex_box[0]
 
-    inter_maskb = gt_mask[y1:y2+1 , x1:x2+1]
+    inter_maskb = gt_mask[y1:y2 + 1, x1:x2 + 1]
     regression_target = np.zeros((ex_box[3] - ex_box[1] + 1, ex_box[2] - ex_box[0] + 1))
     regression_target[ex_starty: ex_starty + h, ex_startx: ex_startx + w] = inter_maskb
 

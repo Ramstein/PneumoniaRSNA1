@@ -15,12 +15,14 @@ limitations under the License.
 """
 
 import keras
+
 from ..utils.coco_eval import evaluate_coco
 
 
 class CocoEval(keras.callbacks.Callback):
     """ Performs COCO evaluation on each epoch.
     """
+
     def __init__(self, generator, tensorboard=None, threshold=0.05):
         """ CocoEval callback intializer.
 

@@ -11,16 +11,15 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import numpy as np
-import mxnet as mx
-import random
 import math
-
-from mxnet.executor_manager import _split_input_slice
-from utils.image import tensor_vstack
-from segmentation.segmentation import get_segmentation_train_batch, get_segmentation_test_batch
-from PIL import Image
+import random
 from multiprocessing import Pool
+
+import mxnet as mx
+import numpy as np
+from mxnet.executor_manager import _split_input_slice
+from segmentation.segmentation import get_segmentation_train_batch, get_segmentation_test_batch
+
 
 class TestDataLoader(mx.io.DataIter):
     def __init__(self, segdb, config, batch_size=1, shuffle=False):
@@ -103,8 +102,10 @@ class TestDataLoader(mx.io.DataIter):
         self.data = [[mx.nd.array(data[i][name]) for name in self.data_name] for i in xrange(len(data))]
         self.im_info = im_info
 
+
 class TrainDataLoader(mx.io.DataIter):
-    def __init__(self, sym, segdb, config, batch_size=1, crop_height = 768, crop_width = 1024, shuffle=False, ctx=None, work_load_list=None):
+    def __init__(self, sym, segdb, config, batch_size=1, crop_height=768, crop_width=1024, shuffle=False, ctx=None,
+                 work_load_list=None):
         """
         This Iter will provide seg data to Deeplab network
         :param sym: to infer shape
@@ -154,7 +155,7 @@ class TrainDataLoader(mx.io.DataIter):
         self.label = None
 
         # init multi-process pool
-        self.pool = Pool(processes = len(self.ctx))
+        self.pool = Pool(processes=len(self.ctx))
 
         # get first batch to fill in provide_data and provide_label
         self.reset()
@@ -234,7 +235,8 @@ class TrainDataLoader(mx.io.DataIter):
 
         for idx, islice in enumerate(slices):
             isegdb = [segdb[i] for i in range(islice.start, islice.stop)]
-            multiprocess_results.append(self.pool.apply_async(parfetch, (self.config, self.crop_width, self.crop_height, isegdb)))
+            multiprocess_results.append(
+                self.pool.apply_async(parfetch, (self.config, self.crop_width, self.crop_height, isegdb)))
 
         rst = [multiprocess_result.get() for multiprocess_result in multiprocess_results]
 
@@ -242,6 +244,7 @@ class TrainDataLoader(mx.io.DataIter):
         all_label = [_['label'] for _ in rst]
         self.data = [[mx.nd.array(data[key]) for key in self.data_name] for data in all_data]
         self.label = [[mx.nd.array(label[key]) for key in self.label_name] for label in all_label]
+
 
 def parfetch(config, crop_width, crop_height, isegdb):
     # get testing data for multigpu
@@ -254,14 +257,14 @@ def parfetch(config, crop_width, crop_height, isegdb):
         sy = math.floor(random.random() * (data_internal.shape[2] - crop_height + 1))
         sx = (int)(sx)
         sy = (int)(sy)
-        assert(sx >= 0 and sx < data_internal.shape[3] - crop_width + 1)
-        assert(sy >= 0 and sy < data_internal.shape[2] - crop_height + 1)
+        assert (sx >= 0 and sx < data_internal.shape[3] - crop_width + 1)
+        assert (sy >= 0 and sy < data_internal.shape[2] - crop_height + 1)
 
         ex = (int)(sx + crop_width - 1)
         ey = (int)(sy + crop_height - 1)
 
-        data_internal = data_internal[:, :, sy : ey + 1, sx : ex + 1]
-        label_internal = label_internal[:, :, sy : ey + 1, sx : ex + 1]
+        data_internal = data_internal[:, :, sy: ey + 1, sx: ex + 1]
+        label_internal = label_internal[:, :, sy: ey + 1, sx: ex + 1]
 
         data['data'] = data_internal
         label['label'] = label_internal

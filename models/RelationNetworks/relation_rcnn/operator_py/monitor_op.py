@@ -5,10 +5,6 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 import mxnet as mx
-import numpy as np
-from distutils.util import strtobool
-from easydict import EasyDict as edict
-import cPickle
 
 DEBUG = False
 
@@ -16,7 +12,7 @@ DEBUG = False
 class MonitorOperator(mx.operator.CustomOp):
     def __init__(self, nickname):
         super(MonitorOperator, self).__init__()
-        self.nickname= nickname
+        self.nickname = nickname
 
     def forward(self, is_train, req, in_data, out_data, aux):
         self.assign(out_data[0], req[0], in_data[0])

@@ -11,14 +11,13 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import numpy as np
 import mxnet as mx
-from mxnet.executor_manager import _split_input_slice
-
+import numpy as np
 from config.config import config
-from utils.image import tensor_vstack
-from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor
+from mxnet.executor_manager import _split_input_slice
 from rcnn import get_rcnn_testbatch, get_rcnn_batch
+from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor
+from utils.image import tensor_vstack
 
 
 class TestLoader(mx.io.DataIter):
@@ -83,8 +82,8 @@ class TestLoader(mx.io.DataIter):
             self.get_batch()
             self.cur += self.batch_size
             return self.im_info, mx.io.DataBatch(data=self.data, label=self.label,
-                                   pad=self.getpad(), index=self.getindex(),
-                                   provide_data=self.provide_data, provide_label=self.provide_label)
+                                                 pad=self.getpad(), index=self.getindex(),
+                                                 provide_data=self.provide_data, provide_label=self.provide_label)
         else:
             raise StopIteration
 
@@ -121,7 +120,8 @@ class TestLoader(mx.io.DataIter):
 
 
 class ROIIter(mx.io.DataIter):
-    def __init__(self, roidb, config, batch_size=2, shuffle=False, ctx=None, work_load_list=None, aspect_grouping=False):
+    def __init__(self, roidb, config, batch_size=2, shuffle=False, ctx=None, work_load_list=None,
+                 aspect_grouping=False):
         """
         This Iter will provide roi data to Fast R-CNN network
         :param roidb: must be preprocessed
@@ -508,4 +508,3 @@ class AnchorLoader(mx.io.DataIter):
                               self.feat_stride, self.anchor_scales,
                               self.anchor_ratios, self.allowed_border)
         return {'data': data, 'label': label}
-

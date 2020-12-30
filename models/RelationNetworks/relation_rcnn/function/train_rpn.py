@@ -11,18 +11,17 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import argparse
 import logging
 import pprint
-import mxnet as mx
 
-from symbols import *
+import mxnet as mx
 from core import callback, metric
 from core.loader import AnchorLoader
 from core.module import MutableModule
+from symbols import *
+from utils.PrefetchingIter import PrefetchingIterV2 as PrefetchingIter
 from utils.load_data import load_gt_roidb, merge_roidb, filter_roidb
 from utils.load_model import load_param
-from utils.PrefetchingIter import PrefetchingIterV2 as PrefetchingIter
 from utils.lr_scheduler import WarmupMultiFactorScheduler
 
 
@@ -66,7 +65,8 @@ def train_rpn(cfg, dataset, image_set, root_path, dataset_path,
                               anchor_ratios=cfg.network.ANCHOR_RATIOS, aspect_grouping=cfg.TRAIN.ASPECT_GROUPING)
 
     # infer max shape
-    max_data_shape = [('data', (cfg.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in cfg.SCALES]), max([v[1] for v in cfg.SCALES])))]
+    max_data_shape = [
+        ('data', (cfg.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in cfg.SCALES]), max([v[1] for v in cfg.SCALES])))]
     max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape)
     print('providing maximum shape', max_data_shape, max_label_shape)
 
@@ -94,7 +94,8 @@ def train_rpn(cfg, dataset, image_set, root_path, dataset_path,
         fixed_param_prefix = cfg.network.FIXED_PARAMS
     mod = MutableModule(sym, data_names=data_names, label_names=label_names,
                         logger=logger, context=ctx, max_data_shapes=[max_data_shape for _ in xrange(batch_size)],
-                        max_label_shapes=[max_label_shape for _ in xrange(batch_size)], fixed_param_prefix=fixed_param_prefix)
+                        max_label_shapes=[max_label_shape for _ in xrange(batch_size)],
+                        fixed_param_prefix=fixed_param_prefix)
 
     # decide training params
     # metric
@@ -116,7 +117,8 @@ def train_rpn(cfg, dataset, image_set, root_path, dataset_path,
     lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
     lr_iters = [int(epoch * len(roidb) / batch_size) for epoch in lr_epoch_diff]
     print('lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters)
-    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, cfg.TRAIN.warmup, cfg.TRAIN.warmup_lr, cfg.TRAIN.warmup_step)
+    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, cfg.TRAIN.warmup, cfg.TRAIN.warmup_lr,
+                                              cfg.TRAIN.warmup_step)
     # optimizer
     optimizer_params = {'momentum': cfg.TRAIN.momentum,
                         'wd': cfg.TRAIN.wd,
@@ -133,4 +135,3 @@ def train_rpn(cfg, dataset, image_set, root_path, dataset_path,
             batch_end_callback=batch_end_callback, kvstore=kvstore,
             optimizer='sgd', optimizer_params=optimizer_params,
             arg_params=arg_params, aux_params=aux_params, begin_epoch=begin_epoch, num_epoch=end_epoch)
-

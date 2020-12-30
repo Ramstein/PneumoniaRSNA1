@@ -28,10 +28,9 @@ roidb extended format [image_index]
 
 import numpy as np
 import numpy.random as npr
-
-from utils.image import get_image, tensor_vstack
-from bbox.bbox_transform import bbox_overlaps, bbox_transform
 from bbox.bbox_regression import expand_bbox_regression_targets
+from bbox.bbox_transform import bbox_overlaps, bbox_transform
+from utils.image import get_image, tensor_vstack
 
 
 def get_rcnn_testbatch(roidb, cfg):
@@ -139,12 +138,13 @@ def get_rcnn_batch(roidb, cfg):
 
         if cfg.TRAIN.BATCH_ROIS == -1:
             im_rois, labels_t, bbox_targets, bbox_weights = \
-                sample_rois_v2(rois, num_classes, cfg, labels=labels, overlaps=overlaps, bbox_targets=bbox_targets, gt_boxes=None)
+                sample_rois_v2(rois, num_classes, cfg, labels=labels, overlaps=overlaps, bbox_targets=bbox_targets,
+                               gt_boxes=None)
 
             assert np.abs(im_rois - rois).max() < 1e-3
             assert np.abs(labels_t - labels).max() < 1e-3
         else:
-            im_rois, labels, bbox_targets, bbox_weights, gt_lables =  \
+            im_rois, labels, bbox_targets, bbox_weights, gt_lables = \
                 sample_rois(rois, fg_rois_per_image, rois_per_image, num_classes, cfg,
                             labels, overlaps, bbox_targets, gt_lables=gt_lables)
 
@@ -325,7 +325,6 @@ def sample_rois_v2(rois, num_classes, cfg,
     return rois, labels, bbox_targets, bbox_weights
 
 
-
 def sample_rois(rois, fg_rois_per_image, rois_per_image, num_classes, cfg,
                 labels=None, overlaps=None, bbox_targets=None, gt_boxes=None, gt_lables=None):
     """
@@ -395,4 +394,3 @@ def sample_rois(rois, fg_rois_per_image, rois_per_image, num_classes, cfg,
         expand_bbox_regression_targets(bbox_target_data, num_classes, cfg)
 
     return rois, labels, bbox_targets, bbox_weights, gt_lables
-

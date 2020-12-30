@@ -11,9 +11,10 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import mxnet as mx
-from mxnet.io import DataDesc, DataBatch
 import threading
+
+import mxnet as mx
+from mxnet.io import DataDesc
 
 
 class PrefetchingIter(mx.io.DataIter):
@@ -37,12 +38,13 @@ class PrefetchingIter(mx.io.DataIter):
     iter = PrefetchingIter([NDArrayIter({'data': X1}), NDArrayIter({'data': X2})],
                            rename_data=[{'data': 'data1'}, {'data': 'data2'}])
     """
+
     def __init__(self, iters, rename_data=None, rename_label=None):
         super(PrefetchingIter, self).__init__()
         if not isinstance(iters, list):
             iters = [iters]
         self.n_iter = len(iters)
-        assert self.n_iter ==1, "Our prefetching iter only support 1 DataIter"
+        assert self.n_iter == 1, "Our prefetching iter only support 1 DataIter"
         self.iters = iters
         self.rename_data = rename_data
         self.rename_label = rename_label
@@ -54,6 +56,7 @@ class PrefetchingIter(mx.io.DataIter):
         self.started = True
         self.current_batch = [None for _ in range(self.n_iter)]
         self.next_batch = [None for _ in range(self.n_iter)]
+
         def prefetch_func(self, i):
             """Thread entry"""
             while True:
@@ -66,6 +69,7 @@ class PrefetchingIter(mx.io.DataIter):
                     self.next_batch[i] = None
                 self.data_taken[i].clear()
                 self.data_ready[i].set()
+
         self.prefetch_threads = [threading.Thread(target=prefetch_func, args=[self, i]) \
                                  for i in range(self.n_iter)]
         for thread in self.prefetch_threads:

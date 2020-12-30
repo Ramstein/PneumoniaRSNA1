@@ -15,7 +15,8 @@ label =
 """
 
 import numpy as np
-from utils.image import get_segmentation_image, tensor_vstack
+from utils.image import get_segmentation_image
+
 
 def get_segmentation_test_batch(segdb, config):
     """
@@ -29,10 +30,11 @@ def get_segmentation_test_batch(segdb, config):
     im_info = [np.array([segdb[i]['im_info']], dtype=np.float32) for i in xrange(len(segdb))]
 
     data = [{'data': im_array[i],
-            'im_info': im_info[i]} for i in xrange(len(segdb))]
-    label = [{'label':seg_cls_gts[i]} for i in xrange(len(segdb))]
+             'im_info': im_info[i]} for i in xrange(len(segdb))]
+    label = [{'label': seg_cls_gts[i]} for i in xrange(len(segdb))]
 
     return data, label, im_info
+
 
 def get_segmentation_train_batch(segdb, config):
     """
@@ -55,4 +57,3 @@ def get_segmentation_train_batch(segdb, config):
     label = {'label': seg_cls_gt}
 
     return data, label
-

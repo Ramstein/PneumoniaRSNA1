@@ -5,12 +5,10 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 
-import cPickle
 import mxnet as mx
-from utils.symbol import Symbol
+from operator_py.box_annotator_ohem import *
 from operator_py.proposal import *
 from operator_py.proposal_target import *
-from operator_py.box_annotator_ohem import *
 from resnet_v1_101_rcnn_base import resnet_v1_101_rcnn_base
 
 
@@ -255,7 +253,8 @@ class resnet_v1_101_rcnn_learn_nms_base(resnet_v1_101_rcnn_base):
         Returns:
             position_matrix: [num_fg_classes, num_boxes, num_boxes, 4]
         """
-        print 'base extract_position_matrix'
+        print
+        'base extract_position_matrix'
         bbox = mx.sym.transpose(bbox, axes=(1, 0, 2))
         xmin, ymin, xmax, ymax = mx.sym.split(data=bbox,
                                               num_outputs=4, axis=2)
@@ -287,4 +286,3 @@ class resnet_v1_101_rcnn_learn_nms_base(resnet_v1_101_rcnn_base):
             concat_list[idx] = mx.sym.expand_dims(sym, axis=3)
         position_matrix = mx.sym.concat(*concat_list, dim=3)
         return position_matrix
-

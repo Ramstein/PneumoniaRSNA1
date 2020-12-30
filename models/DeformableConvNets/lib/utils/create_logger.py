@@ -5,9 +5,10 @@
 # Written by Bin Xiao
 # --------------------------------------------------------
 
-import os
 import logging
+import os
 import time
+
 
 def create_logger(root_output_path, cfg, image_set):
     # set up logger
@@ -32,4 +33,3 @@ def create_logger(root_output_path, cfg, image_set):
     logger.setLevel(logging.INFO)
 
     return logger, final_output_path
-

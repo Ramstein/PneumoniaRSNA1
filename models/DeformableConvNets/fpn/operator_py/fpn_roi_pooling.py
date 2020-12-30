@@ -5,10 +5,11 @@
 # Modified by Haozhi Qi, Yuwen Xiong
 # --------------------------------------------------------
 
+import gc
+
 import mxnet as mx
 import numpy as np
 from mxnet.contrib import autograd
-import gc
 
 
 class FPNROIPoolingOperator(mx.operator.CustomOp):
@@ -53,34 +54,61 @@ class FPNROIPoolingOperator(mx.operator.CustomOp):
 
                 with autograd.train_section():
                     for i in range(self.num_strides):
-                        roi_offset_t = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i], rois=mx.nd.array(rois_p[i], in_data[i].context), group_size=1, pooled_size=7,
-                                                                            sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=1.0 / self.feat_strides[i])
-                        roi_offset = mx.nd.FullyConnected(data=roi_offset_t, num_hidden=7 * 7 * 2, weight=in_data[i * 2 + self.num_strides], bias=in_data[i * 2 + 1 + self.num_strides])
+                        roi_offset_t = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i], rois=mx.nd.array(rois_p[i],
+                                                                                                              in_data[
+                                                                                                                  i].context),
+                                                                            group_size=1, pooled_size=7,
+                                                                            sample_per_part=4, no_trans=True,
+                                                                            part_size=7, output_dim=256,
+                                                                            spatial_scale=1.0 / self.feat_strides[i])
+                        roi_offset = mx.nd.FullyConnected(data=roi_offset_t, num_hidden=7 * 7 * 2,
+                                                          weight=in_data[i * 2 + self.num_strides],
+                                                          bias=in_data[i * 2 + 1 + self.num_strides])
                         roi_offset_reshape = mx.nd.reshape(data=roi_offset, shape=(-1, 2, 7, 7))
-                        self.roi_pool[i] = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i], rois=mx.nd.array(rois_p[i], in_data[i].context), trans=roi_offset_reshape,
-                                                                                group_size=1, pooled_size=7, sample_per_part=4, no_trans=False, part_size=7,
-                                                                                output_dim=self.output_dim, spatial_scale=1.0 / self.feat_strides[i], trans_std=0.1)
+                        self.roi_pool[i] = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i],
+                                                                                rois=mx.nd.array(rois_p[i],
+                                                                                                 in_data[i].context),
+                                                                                trans=roi_offset_reshape,
+                                                                                group_size=1, pooled_size=7,
+                                                                                sample_per_part=4, no_trans=False,
+                                                                                part_size=7,
+                                                                                output_dim=self.output_dim,
+                                                                                spatial_scale=1.0 / self.feat_strides[
+                                                                                    i], trans_std=0.1)
             else:
                 autograd.mark_variables([in_data[i] for i in range(self.num_strides)], self.in_grad_hist_list)
                 with autograd.train_section():
                     for i in range(self.num_strides):
-                        self.roi_pool[i] = mx.nd.ROIPooling(in_data[i], mx.nd.array(rois_p[i], in_data[i].context), (7, 7), spatial_scale=1.0 / self.feat_strides[i])
+                        self.roi_pool[i] = mx.nd.ROIPooling(in_data[i], mx.nd.array(rois_p[i], in_data[i].context),
+                                                            (7, 7), spatial_scale=1.0 / self.feat_strides[i])
             roi_pool = mx.nd.concatenate(self.roi_pool, axis=0)
         else:
             # during testing, there is no need to record variable, thus saving memory
             roi_pool = [None for _ in range(self.num_strides)]
             if self.with_deformable:
                 for i in range(self.num_strides):
-                    roi_offset_t = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i], rois=mx.nd.array(rois_p[i], in_data[i].context), group_size=1, pooled_size=7,
-                                                                        sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=1.0 / self.feat_strides[i])
-                    roi_offset = mx.nd.FullyConnected(data=roi_offset_t, num_hidden=7 * 7 * 2, weight=in_data[i * 2 + self.num_strides], bias=in_data[i * 2 + 1 + self.num_strides])
+                    roi_offset_t = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i],
+                                                                        rois=mx.nd.array(rois_p[i], in_data[i].context),
+                                                                        group_size=1, pooled_size=7,
+                                                                        sample_per_part=4, no_trans=True, part_size=7,
+                                                                        output_dim=256,
+                                                                        spatial_scale=1.0 / self.feat_strides[i])
+                    roi_offset = mx.nd.FullyConnected(data=roi_offset_t, num_hidden=7 * 7 * 2,
+                                                      weight=in_data[i * 2 + self.num_strides],
+                                                      bias=in_data[i * 2 + 1 + self.num_strides])
                     roi_offset_reshape = mx.nd.reshape(data=roi_offset, shape=(-1, 2, 7, 7))
-                    roi_pool[i] = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i], rois=mx.nd.array(rois_p[i], in_data[i].context), trans=roi_offset_reshape,
-                                                                       group_size=1, pooled_size=7, sample_per_part=4, no_trans=False, part_size=7,
-                                                                       output_dim=self.output_dim, spatial_scale=1.0 / self.feat_strides[i], trans_std=0.1)
+                    roi_pool[i] = mx.contrib.nd.DeformablePSROIPooling(data=in_data[i],
+                                                                       rois=mx.nd.array(rois_p[i], in_data[i].context),
+                                                                       trans=roi_offset_reshape,
+                                                                       group_size=1, pooled_size=7, sample_per_part=4,
+                                                                       no_trans=False, part_size=7,
+                                                                       output_dim=self.output_dim,
+                                                                       spatial_scale=1.0 / self.feat_strides[i],
+                                                                       trans_std=0.1)
             else:
                 for i in range(self.num_strides):
-                    roi_pool[i] = mx.nd.ROIPooling(in_data[i], mx.nd.array(rois_p[i], in_data[i].context), (7, 7), spatial_scale=1.0 / self.feat_strides[i])
+                    roi_pool[i] = mx.nd.ROIPooling(in_data[i], mx.nd.array(rois_p[i], in_data[i].context), (7, 7),
+                                                   spatial_scale=1.0 / self.feat_strides[i])
 
             roi_pool = mx.nd.concatenate(roi_pool, axis=0)
 
@@ -94,7 +122,9 @@ class FPNROIPoolingOperator(mx.operator.CustomOp):
         with autograd.train_section():
             for i in range(self.num_strides):
                 if len(self.feat_idx[i] > 0):
-                    autograd.compute_gradient([mx.nd.take(out_grad[0], mx.nd.array(self.feat_idx[i], out_grad[0].context)) * self.roi_pool[i]])
+                    autograd.compute_gradient([mx.nd.take(out_grad[0],
+                                                          mx.nd.array(self.feat_idx[i], out_grad[0].context)) *
+                                               self.roi_pool[i]])
 
         if self.with_deformable:
             for i in range(0, self.num_strides * 3):
@@ -108,7 +138,8 @@ class FPNROIPoolingOperator(mx.operator.CustomOp):
 
 @mx.operator.register('fpn_roi_pooling')
 class FPNROIPoolingProp(mx.operator.CustomOpProp):
-    def __init__(self, feat_strides='(4,8,16,32)', pooled_height='7', pooled_width='7', with_deformable='False', output_dim='256'):
+    def __init__(self, feat_strides='(4,8,16,32)', pooled_height='7', pooled_width='7', with_deformable='False',
+                 output_dim='256'):
         super(FPNROIPoolingProp, self).__init__(need_top_grad=True)
         self.pooled_height = int(pooled_height)
         self.pooled_width = int(pooled_width)
@@ -137,11 +168,13 @@ class FPNROIPoolingProp(mx.operator.CustomOpProp):
             offset_dim = self.pooled_height * self.pooled_width * 2
             input_dim = self.pooled_height * self.pooled_width * self.output_dim
             for i in range(self.num_strides):
-                in_shape[i * 2 + self.num_strides], in_shape[i * 2 + 1 + self.num_strides] = [offset_dim, input_dim], [offset_dim, ]
+                in_shape[i * 2 + self.num_strides], in_shape[i * 2 + 1 + self.num_strides] = [offset_dim, input_dim], [
+                    offset_dim, ]
         return in_shape, [output_feat_shape]
 
     def create_operator(self, ctx, shapes, dtypes):
-        return FPNROIPoolingOperator(self.feat_strides, self.pooled_height, self.pooled_width, self.output_dim, self.with_deformable)
+        return FPNROIPoolingOperator(self.feat_strides, self.pooled_height, self.pooled_width, self.output_dim,
+                                     self.with_deformable)
 
     def declare_backward_dependency(self, out_grad, in_data, out_data):
         return [out_grad[0]]

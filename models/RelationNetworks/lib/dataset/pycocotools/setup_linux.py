@@ -1,7 +1,8 @@
 from distutils.core import setup
-from Cython.Build import cythonize
 from distutils.extension import Extension
+
 import numpy as np
+from Cython.Build import cythonize
 
 # To compile and install locally run "python setup.py build_ext --inplace"
 # To install library to Python site-packages run "python setup.py build_ext install"
@@ -17,4 +18,4 @@ ext_modules = [
 
 setup(name='pycocotools',
       ext_modules=cythonize(ext_modules)
-)
+      )

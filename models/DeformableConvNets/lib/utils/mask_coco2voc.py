@@ -5,10 +5,11 @@
 # Written by Yi Li
 # --------------------------------------------------------
 
-from skimage.draw import polygon
 import numpy as np
+from skimage.draw import polygon
 
-def segToMask( S, h, w ):
+
+def segToMask(S, h, w):
     """
     Convert polygon segmentation to binary mask.
     :param   S (float array)   : polygon segmentation mask
@@ -16,11 +17,11 @@ def segToMask( S, h, w ):
     :param   w (int)           : target mask width
     :return: M (bool 2D array) : binary mask
     """
-    M = np.zeros((h,w), dtype=np.bool)
+    M = np.zeros((h, w), dtype=np.bool)
     for s in S:
         N = len(s)
-        rr, cc = polygon(np.array(s[1:N:2]).clip(max=h-1), \
-                      np.array(s[0:N:2]).clip(max=w-1)) # (y, x)
+        rr, cc = polygon(np.array(s[1:N:2]).clip(max=h - 1), \
+                         np.array(s[0:N:2]).clip(max=w - 1))  # (y, x)
         M[rr, cc] = 1
     return M
 
@@ -32,7 +33,7 @@ def decodeMask(R):
     :return: M (bool 2D array) : decoded binary mask
     """
     N = len(R['counts'])
-    M = np.zeros( (R['size'][0]*R['size'][1], ))
+    M = np.zeros((R['size'][0] * R['size'][1],))
     n = 0
     val = 1
     for pos in range(N):
@@ -43,6 +44,7 @@ def decodeMask(R):
             n += 1
     return M.reshape((R['size']), order='F')
 
+
 def mask_coco2voc(coco_masks, im_height, im_width):
     voc_masks = np.zeros((len(coco_masks), im_height, im_width))
     for i, ann in enumerate(coco_masks):
@@ -52,5 +54,5 @@ def mask_coco2voc(coco_masks, im_height, im_width):
         else:
             # rle
             m = decodeMask(ann)
-        voc_masks[i,:,:]=m;
+        voc_masks[i, :, :] = m;
     return voc_masks

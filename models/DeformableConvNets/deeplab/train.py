@@ -11,15 +11,13 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import _init_paths
-
-import time
 import argparse
-import logging
-import pprint
 import os
+import pprint
 import sys
+
 from config.config import config, update_config
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train deeplab network')
@@ -35,13 +33,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
 
-
 import shutil
-import numpy as np
 import mxnet as mx
 
 from symbols import *
@@ -54,6 +51,7 @@ from utils.PrefetchingIter import PrefetchingIter
 from utils.create_logger import create_logger
 from utils.lr_scheduler import WarmupMultiFactorScheduler
 
+
 def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, lr_step):
     logger, final_output_path = create_logger(config.output_path, args.cfg, config.dataset.image_set)
     prefix = os.path.join(final_output_path, prefix)
@@ -62,7 +60,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     shutil.copy2(os.path.join(curr_path, 'symbols', config.symbol + '.py'), final_output_path)
     sym_instance = eval(config.symbol + '.' + config.symbol)()
     sym = sym_instance.get_symbol(config, is_train=True)
-    #sym = eval('get_' + args.network + '_train')(num_classes=config.dataset.NUM_CLASSES)
+    # sym = eval('get_' + args.network + '_train')(num_classes=config.dataset.NUM_CLASSES)
 
     # setup multi-gpu
     batch_size = len(ctx)
@@ -80,15 +78,19 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     segdb = merge_segdb(segdbs)
 
     # load training data
-    train_data = TrainDataLoader(sym, segdb, config, batch_size=input_batch_size, crop_height=config.TRAIN.CROP_HEIGHT, crop_width=config.TRAIN.CROP_WIDTH,
+    train_data = TrainDataLoader(sym, segdb, config, batch_size=input_batch_size, crop_height=config.TRAIN.CROP_HEIGHT,
+                                 crop_width=config.TRAIN.CROP_WIDTH,
                                  shuffle=config.TRAIN.SHUFFLE, ctx=ctx)
 
     # infer max shape
     max_scale = [(config.TRAIN.CROP_HEIGHT, config.TRAIN.CROP_WIDTH)]
-    max_data_shape = [('data', (config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in max_scale]), max([v[1] for v in max_scale])))]
-    max_label_shape = [('label', (config.TRAIN.BATCH_IMAGES, 1, max([v[0] for v in max_scale]), max([v[1] for v in max_scale])))]
+    max_data_shape = [
+        ('data', (config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in max_scale]), max([v[1] for v in max_scale])))]
+    max_label_shape = [
+        ('label', (config.TRAIN.BATCH_IMAGES, 1, max([v[0] for v in max_scale]), max([v[1] for v in max_scale])))]
     # max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape, max_label_shape)
-    print 'providing maximum shape', max_data_shape, max_label_shape
+    print
+    'providing maximum shape', max_data_shape, max_label_shape
 
     # infer shape
     data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
@@ -97,10 +99,12 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     # load and initialize params
     if config.TRAIN.RESUME:
-        print 'continue training from ', begin_epoch
+        print
+        'continue training from ', begin_epoch
         arg_params, aux_params = load_param(prefix, begin_epoch, convert=True)
     else:
-        print pretrained
+        print
+        pretrained
         arg_params, aux_params = load_param(pretrained, epoch, convert=True)
         sym_instance.init_weights(config, arg_params, aux_params)
 
@@ -114,7 +118,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     mod = MutableModule(sym, data_names=data_names, label_names=label_names,
                         logger=logger, context=ctx, max_data_shapes=[max_data_shape for _ in xrange(batch_size)],
-                        max_label_shapes=[max_label_shape for _ in xrange(batch_size)], fixed_param_prefix=fixed_param_prefix)
+                        max_label_shapes=[max_label_shape for _ in xrange(batch_size)],
+                        fixed_param_prefix=fixed_param_prefix)
 
     # decide training params
     # metric
@@ -136,9 +141,11 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     lr_epoch_diff = [epoch - begin_epoch for epoch in lr_epoch if epoch > begin_epoch]
     lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
     lr_iters = [int(epoch * len(segdb) / batch_size) for epoch in lr_epoch_diff]
-    print 'lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters
+    print
+    'lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters
 
-    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr, config.TRAIN.warmup_step)
+    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr,
+                                              config.TRAIN.warmup_step)
 
     # optimizer
     optimizer_params = {'momentum': config.TRAIN.momentum,
@@ -157,11 +164,14 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
             optimizer='sgd', optimizer_params=optimizer_params,
             arg_params=arg_params, aux_params=aux_params, begin_epoch=begin_epoch, num_epoch=end_epoch)
 
+
 def main():
-    print 'Called with argument:', args
+    print
+    'Called with argument:', args
     ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
     train_net(args, ctx, config.network.pretrained, config.network.pretrained_epoch, config.TRAIN.model_prefix,
               config.TRAIN.begin_epoch, config.TRAIN.end_epoch, config.TRAIN.lr, config.TRAIN.lr_step)
+
 
 if __name__ == '__main__':
     main()

@@ -5,16 +5,17 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 
-import cPickle
 import math
+
+import cPickle
 import mxnet as mx
-from utils.symbol import Symbol
+from operator_py.box_annotator_ohem import *
+from operator_py.learn_nms import *
+from operator_py.nms_multi_target import *
 from operator_py.proposal import *
 from operator_py.proposal_target import *
-from operator_py.learn_nms import *
-from operator_py.box_annotator_ohem import *
-from operator_py.nms_multi_target import *
 from resnet_v1_101_rcnn_learn_nms_base import resnet_v1_101_rcnn_learn_nms_base as NMS_UTILS
+from utils.symbol import Symbol
 
 
 class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_learn_nms(Symbol):
@@ -689,7 +690,8 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
     def get_resnet_v1_conv5(self, conv_feat):
         res5a_branch1 = mx.symbol.Convolution(name='res5a_branch1', data=conv_feat, num_filter=2048, pad=(0, 0),
                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True, fix_gamma=False, eps=self.eps)
+        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True,
+                                           fix_gamma=False, eps=self.eps)
         scale5a_branch1 = bn5a_branch1
         res5a_branch2a = mx.symbol.Convolution(name='res5a_branch2a', data=conv_feat, num_filter=512, pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
@@ -697,16 +699,20 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2a = bn5a_branch2a
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
-        res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data = res5a_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu, offset=res5a_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu,
+                                                                 offset=res5a_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5a_branch2b = mx.symbol.BatchNorm(name='bn5a_branch2b', data=res5a_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2b = bn5a_branch2b
         res5a_branch2b_relu = mx.symbol.Activation(name='res5a_branch2b_relu', data=scale5a_branch2b, act_type='relu')
-        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5a_branch2c = mx.symbol.BatchNorm(name='bn5a_branch2c', data=res5a_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -719,16 +725,20 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=self.eps)
         scale5b_branch2a = bn5b_branch2a
         res5b_branch2a_relu = mx.symbol.Activation(name='res5b_branch2a_relu', data=scale5b_branch2a, act_type='relu')
-        res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data = res5b_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu, offset=res5b_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu,
+                                                                 offset=res5b_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5b_branch2b = mx.symbol.BatchNorm(name='bn5b_branch2b', data=res5b_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5b_branch2b = bn5b_branch2b
         res5b_branch2b_relu = mx.symbol.Activation(name='res5b_branch2b_relu', data=scale5b_branch2b, act_type='relu')
-        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5b_branch2c = mx.symbol.BatchNorm(name='bn5b_branch2c', data=res5b_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -741,16 +751,20 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=self.eps)
         scale5c_branch2a = bn5c_branch2a
         res5c_branch2a_relu = mx.symbol.Activation(name='res5c_branch2a_relu', data=scale5c_branch2a, act_type='relu')
-        res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data = res5c_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu, offset=res5c_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu,
+                                                                 offset=res5c_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5c_branch2b = mx.symbol.BatchNorm(name='bn5c_branch2b', data=res5c_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5c_branch2b = bn5c_branch2b
         res5c_branch2b_relu = mx.symbol.Activation(name='res5c_branch2b_relu', data=scale5c_branch2b, act_type='relu')
-        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5c_branch2c = mx.symbol.BatchNorm(name='bn5c_branch2c', data=res5c_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -919,7 +933,7 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         # position_embedding, [num_fg_classes, num_rois, num_rois, fc_dim[0]]
         position_embedding = NMS_UTILS.extract_pairwise_multi_position_embedding(position_mat, fc_dim[0])
         # [num_fg_classes * num_rois * num_rois, fc_dim[0]]
-        position_embedding_reshape =  mx.sym.Reshape(position_embedding, shape=(-1, fc_dim[0]))
+        position_embedding_reshape = mx.sym.Reshape(position_embedding, shape=(-1, fc_dim[0]))
         # position_feat_1, [num_fg_classes * num_rois * num_rois, fc_dim[1]]
         position_feat_1 = mx.sym.FullyConnected(name='nms_pair_pos_fc1_' + str(index),
                                                 data=position_embedding_reshape,
@@ -954,7 +968,7 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         # [num_fg_classes * fc_dim[1], num_rois, num_rois]
         aff_weight_reshape = mx.sym.Reshape(aff_weight, shape=(-3, -2))
         # weighted_aff, [num_fg_classes * fc_dim[1], num_rois, num_rois]
-        weighted_aff= mx.sym.log(mx.sym.maximum(left=aff_weight_reshape, right=1e-6)) + aff_scale
+        weighted_aff = mx.sym.log(mx.sym.maximum(left=aff_weight_reshape, right=1e-6)) + aff_scale
         # aff_softmax, [num_fg_classes * fc_dim[1], num_rois, num_rois]
         aff_softmax = mx.symbol.softmax(data=weighted_aff, axis=2, name='nms_softmax_' + str(index))
         aff_softmax_reshape = mx.sym.Reshape(aff_softmax, shape=(-1, fc_dim[1] * num_rois, 0))
@@ -1070,14 +1084,19 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
 
-        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
-                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
+        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1,
+                                                         pooled_size=7,
+                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256,
+                                                         spatial_scale=0.0625)
         offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
         offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
-                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
-                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
+        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu,
+                                                                    rois=rois,
+                                                                    trans=offset_reshape, group_size=1, pooled_size=7,
+                                                                    sample_per_part=4,
+                                                                    no_trans=False, part_size=7, output_dim=256,
+                                                                    spatial_scale=0.0625, trans_std=0.1)
 
         nongt_dim = cfg.TRAIN.RPN_POST_NMS_TOP_N if is_train else cfg.TEST.RPN_POST_NMS_TOP_N
         sliced_rois = mx.sym.slice_axis(rois, axis=1, begin=1, end=None)
@@ -1176,8 +1195,8 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
             bbox_pred_nobg = mx.sym.slice_axis(data=bbox_pred_nongt, axis=1, begin=4, end=None)
             # [num_boxes, 4, num_reg_classes-1]
             refined_bbox = NMS_UTILS.refine_bbox(sliced_rois, bbox_pred_nobg, im_info,
-                                            means=bbox_means, stds=bbox_stds
-                                            )
+                                                 means=bbox_means, stds=bbox_stds
+                                                 )
             # softmax cls_score to cls_prob, [num_rois, num_classes]
             cls_prob = mx.sym.softmax(data=cls_score_nongt, axis=-1)
             cls_prob_nobg = mx.sym.slice_axis(cls_prob, axis=1, begin=1, end=None)
@@ -1233,13 +1252,13 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
             nms_all_feat_1_relu_reshape = mx.sym.Reshape(nms_all_feat_1_relu, shape=(-3, -2))
             # logit, [first_n * num_fg_classes, num_thresh]
             nms_conditional_logit = mx.sym.FullyConnected(name='nms_logit',
-                                                      data=nms_all_feat_1_relu_reshape,
-                                                      num_hidden=num_thresh)
+                                                          data=nms_all_feat_1_relu_reshape,
+                                                          num_hidden=num_thresh)
             # logit_reshape, [first_n, num_fg_classes, num_thresh]
             nms_conditional_logit_reshape = mx.sym.Reshape(nms_conditional_logit,
-                                                       shape=(first_n, num_fg_classes, num_thresh))
+                                                           shape=(first_n, num_fg_classes, num_thresh))
             nms_conditional_score = mx.sym.Activation(data=nms_conditional_logit_reshape,
-                                                  act_type='sigmoid', name='nms_conditional_score')
+                                                      act_type='sigmoid', name='nms_conditional_score')
             sorted_score_reshape = mx.sym.expand_dims(sorted_score, axis=2)
             # sorted_score_reshape = mx.sym.BlockGrad(sorted_score_reshape)
             nms_multi_score = mx.sym.broadcast_mul(lhs=sorted_score_reshape, rhs=nms_conditional_score)
@@ -1260,22 +1279,30 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
             nms_logit_bias = mx.sym.var('nms_logit_bias', shape=(5,), dtype=np.float32)
 
             nms_multi_score, sorted_bbox, sorted_score = mx.sym.Custom(cls_score=cls_score, bbox_pred=bbox_pred,
-                rois=rois, im_info=im_info, nms_rank_weight=nms_rank_weight, fc_all_2_relu=fc_all_2_relu,
-                nms_rank_bias=nms_rank_bias,
-                roi_feat_embedding_weight=roi_feat_embedding_weight,
-                roi_feat_embedding_bias= roi_feat_embedding_bias,
-                nms_pair_pos_fc1_1_weight=nms_pair_pos_fc1_1_weight,
-                nms_pair_pos_fc1_1_bias=nms_pair_pos_fc1_1_bias,
-                nms_query_1_weight=nms_query_1_weight, nms_query_1_bias=nms_query_1_bias,
-                nms_key_1_weight=nms_key_1_weight, nms_key_1_bias=nms_key_1_bias,
-                nms_linear_out_1_weight= nms_linear_out_1_weight,
-                nms_linear_out_1_bias=nms_linear_out_1_bias,
-                nms_logit_weight=nms_logit_weight, nms_logit_bias=nms_logit_bias,
-                op_type='learn_nms', name='learn_nms',
-                num_fg_classes=num_fg_classes,
-                bbox_means=bbox_means, bbox_stds=bbox_stds, first_n=first_n,
-                class_agnostic=cfg.CLASS_AGNOSTIC, num_thresh=num_thresh, 
-                class_thresh=cfg.TEST.LEARN_NMS_CLASS_SCORE_TH, nongt_dim=nongt_dim, has_non_gt_index=False)
+                                                                       rois=rois, im_info=im_info,
+                                                                       nms_rank_weight=nms_rank_weight,
+                                                                       fc_all_2_relu=fc_all_2_relu,
+                                                                       nms_rank_bias=nms_rank_bias,
+                                                                       roi_feat_embedding_weight=roi_feat_embedding_weight,
+                                                                       roi_feat_embedding_bias=roi_feat_embedding_bias,
+                                                                       nms_pair_pos_fc1_1_weight=nms_pair_pos_fc1_1_weight,
+                                                                       nms_pair_pos_fc1_1_bias=nms_pair_pos_fc1_1_bias,
+                                                                       nms_query_1_weight=nms_query_1_weight,
+                                                                       nms_query_1_bias=nms_query_1_bias,
+                                                                       nms_key_1_weight=nms_key_1_weight,
+                                                                       nms_key_1_bias=nms_key_1_bias,
+                                                                       nms_linear_out_1_weight=nms_linear_out_1_weight,
+                                                                       nms_linear_out_1_bias=nms_linear_out_1_bias,
+                                                                       nms_logit_weight=nms_logit_weight,
+                                                                       nms_logit_bias=nms_logit_bias,
+                                                                       op_type='learn_nms', name='learn_nms',
+                                                                       num_fg_classes=num_fg_classes,
+                                                                       bbox_means=bbox_means, bbox_stds=bbox_stds,
+                                                                       first_n=first_n,
+                                                                       class_agnostic=cfg.CLASS_AGNOSTIC,
+                                                                       num_thresh=num_thresh,
+                                                                       class_thresh=cfg.TEST.LEARN_NMS_CLASS_SCORE_TH,
+                                                                       nongt_dim=nongt_dim, has_non_gt_index=False)
 
         if is_train:
             nms_multi_target = mx.sym.Custom(bbox=sorted_bbox, gt_bbox=gt_boxes, score=sorted_score,
@@ -1404,14 +1431,19 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
 
-        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
-                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
+        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1,
+                                                         pooled_size=7,
+                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256,
+                                                         spatial_scale=0.0625)
         offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
         offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
-                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
-                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
+        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu,
+                                                                    rois=rois,
+                                                                    trans=offset_reshape, group_size=1, pooled_size=7,
+                                                                    sample_per_part=4,
+                                                                    no_trans=False, part_size=7, output_dim=256,
+                                                                    spatial_scale=0.0625, trans_std=0.1)
 
         # 2 fc
         fc_new_1 = mx.sym.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
@@ -1479,7 +1511,7 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         arg_params['nms_linear_out_' + str(index) + '_bias'] = mx.nd.zeros(
             shape=self.arg_shape_dict['nms_linear_out_' + str(index) + '_bias'])
 
-    def init_weight_nms(self, cfg, arg_params,aux_params):
+    def init_weight_nms(self, cfg, arg_params, aux_params):
         arg_params['nms_rank_weight'] = mx.random.normal(
             0, 0.01, shape=self.arg_shape_dict['nms_rank_weight'])
         arg_params['nms_rank_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['nms_rank_bias'])
@@ -1522,11 +1554,14 @@ class resnet_v1_101_rcnn_dcn_attention_1024_pairwise_position_multi_head_16_lear
         arg_params['rpn_bbox_pred_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_bbox_pred_bias'])
 
     def init_weight_rcnn(self, cfg, arg_params, aux_params):
-        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
+        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
         arg_params['res5a_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_bias'])
-        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
+        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
         arg_params['res5b_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_bias'])
-        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
+        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
         arg_params['res5c_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_bias'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])

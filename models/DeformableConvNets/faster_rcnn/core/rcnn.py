@@ -26,10 +26,9 @@ roidb extended format [image_index]
 
 import numpy as np
 import numpy.random as npr
-
-from utils.image import get_image, tensor_vstack
-from bbox.bbox_transform import bbox_overlaps, bbox_transform
 from bbox.bbox_regression import expand_bbox_regression_targets
+from bbox.bbox_transform import bbox_overlaps, bbox_transform
+from utils.image import get_image, tensor_vstack
 
 
 def get_rcnn_testbatch(roidb, cfg):
@@ -188,4 +187,3 @@ def sample_rois(rois, fg_rois_per_image, rois_per_image, num_classes, cfg,
         expand_bbox_regression_targets(bbox_target_data, num_classes, cfg)
 
     return rois, labels, bbox_targets, bbox_weights
-

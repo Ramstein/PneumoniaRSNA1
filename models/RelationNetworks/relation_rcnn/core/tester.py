@@ -12,17 +12,18 @@
 # --------------------------------------------------------
 
 
-import cPickle
 import os
 import time
+
+import cPickle
 import mxnet as mx
 import numpy as np
-
-from module import MutableModule
-from utils import image
 from bbox.bbox_transform import bbox_pred, clip_boxes
-from nms.nms import py_nms_wrapper, py_softnms_wrapper, cpu_nms_wrapper, gpu_nms_wrapper
+from module import MutableModule
+from nms.nms import py_nms_wrapper, py_softnms_wrapper
+from utils import image
 from utils.PrefetchingIter import PrefetchingIterV2 as PrefetchingIter
+
 
 class Predictor(object):
     def __init__(self, symbol, data_names, label_names,
@@ -101,10 +102,10 @@ def generate_proposals(predictor, test_data, imdb, cfg, vis=False, thresh=0.):
             if vis:
                 vis_all_detection(data_dict['data'].asnumpy(), [dets], ['obj'], scale, cfg)
 
-            print 'generating %d/%d' % (idx + 1, imdb.num_images), 'proposal %d' % (dets.shape[0]), \
-                'data %.4fs net %.4fs' % (t1, t2 / test_data.batch_size)
+            print
+            'generating %d/%d' % (idx + 1, imdb.num_images), 'proposal %d' % (dets.shape[0]), \
+            'data %.4fs net %.4fs' % (t1, t2 / test_data.batch_size)
             idx += 1
-
 
     assert len(imdb_boxes) == imdb.num_images, 'calculations not complete'
 
@@ -122,7 +123,8 @@ def generate_proposals(predictor, test_data, imdb, cfg, vis=False, thresh=0.):
         with open(full_rpn_file, 'wb') as f:
             cPickle.dump(original_boxes, f, cPickle.HIGHEST_PROTOCOL)
 
-    print 'wrote rpn proposals to {}'.format(rpn_file)
+    print
+    'wrote rpn proposals to {}'.format(rpn_file)
     return imdb_boxes
 
 
@@ -187,16 +189,15 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
     if not isinstance(test_data, PrefetchingIter):
         test_data = PrefetchingIter(test_data)
 
-    #if cfg.TEST.SOFTNMS:
+    # if cfg.TEST.SOFTNMS:
     #    nms = py_softnms_wrapper(cfg.TEST.NMS)
-    #else:
+    # else:
     #    nms = py_nms_wrapper(cfg.TEST.NMS)
 
     if cfg.TEST.SOFTNMS:
         nms = py_softnms_wrapper(cfg.TEST.NMS)
     else:
         nms = py_nms_wrapper(cfg.TEST.NMS)
-
 
     # limit detections to max_per_image over all classes
     max_per_image = cfg.TEST.max_per_image
@@ -223,16 +224,14 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
         scales = [iim_info[0, 2] for iim_info in im_info]
         scores_all, boxes_all, data_dict_all = im_detect(predictor, data_batch, data_names, scales, cfg)
 
-
-
         t2 = time.time() - t
         t = time.time()
         for delta, (scores, boxes, data_dict) in enumerate(zip(scores_all, boxes_all, data_dict_all)):
             if cfg.TEST.LEARN_NMS:
                 for j in range(1, imdb.num_classes):
-                    indexes = np.where(scores[:, j-1] > thresh)[0]
-                    cls_scores = scores[indexes, j-1:j]
-                    cls_boxes = boxes[indexes, j-1, :]
+                    indexes = np.where(scores[:, j - 1] > thresh)[0]
+                    cls_scores = scores[indexes, j - 1:j]
+                    cls_boxes = boxes[indexes, j - 1, :]
                     cls_dets = np.hstack((cls_boxes, cls_scores))
                     # count the valid ground truth
                     if len(cls_scores) > 0:
@@ -253,7 +252,7 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
                     cls_boxes = boxes[indexes, 4:8] if cfg.CLASS_AGNOSTIC else boxes[indexes, j * 4:(j + 1) * 4]
                     # count the valid ground truth
                     if len(cls_scores) > 0:
-                        class_lut[j].append(idx+delta)
+                        class_lut[j].append(idx + delta)
                         valid_tally += len(cls_scores)
                         valid_sum += len(scores)
                         # print np.min(cls_scores), valid_tally, valid_sum
@@ -268,16 +267,16 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
                         all_boxes[j][idx + delta] = cls_dets[keep, :]
 
             if max_per_image > 0:
-                image_scores = np.hstack([all_boxes[j][idx+delta][:, -1]
+                image_scores = np.hstack([all_boxes[j][idx + delta][:, -1]
                                           for j in range(1, imdb.num_classes)])
                 if len(image_scores) > max_per_image:
                     image_thresh = np.sort(image_scores)[-max_per_image]
                     for j in range(1, imdb.num_classes):
-                        keep = np.where(all_boxes[j][idx+delta][:, -1] >= image_thresh)[0]
-                        all_boxes[j][idx+delta] = all_boxes[j][idx+delta][keep, :]
+                        keep = np.where(all_boxes[j][idx + delta][:, -1] >= image_thresh)[0]
+                        all_boxes[j][idx + delta] = all_boxes[j][idx + delta][keep, :]
 
             if vis:
-                boxes_this_image = [[]] + [all_boxes[j][idx+delta] for j in range(1, imdb.num_classes)]
+                boxes_this_image = [[]] + [all_boxes[j][idx + delta] for j in range(1, imdb.num_classes)]
                 vis_all_detection(data_dict['data'].asnumpy(), boxes_this_image, imdb.classes, scales[delta], cfg)
 
         idx += test_data.batch_size
@@ -288,9 +287,12 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
         inference_count += 1
         if inference_count % 200 == 0:
             valid_count = 500 if inference_count > 500 else inference_count
-            print("--->> running-average inference time per batch: {}".format(float(sum(all_inference_time[-valid_count:]))/valid_count))
-            print("--->> running-average post processing time per batch: {}".format(float(sum(post_processing_time[-valid_count:]))/valid_count))
-        print 'testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, t1, t2, t3)
+            print("--->> running-average inference time per batch: {}".format(
+                float(sum(all_inference_time[-valid_count:])) / valid_count))
+            print("--->> running-average post processing time per batch: {}".format(
+                float(sum(post_processing_time[-valid_count:])) / valid_count))
+        print
+        'testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, t1, t2, t3)
         if logger:
             logger.info('testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, t1, t2, t3))
 
@@ -303,8 +305,8 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
     if logger:
         logger.info('evaluate detections: \n{}'.format(info_str))
         num_valid_classes = [len(x) for x in class_lut]
-        logger.info('valid class ratio:{}'.format(np.sum(num_valid_classes)/float(num_images)))
-        logger.info('valid score ratio:{}'.format(float(valid_tally)/float(valid_sum+0.01)))
+        logger.info('valid class ratio:{}'.format(np.sum(num_valid_classes) / float(num_images)))
+        logger.info('valid score ratio:{}'.format(float(valid_tally) / float(valid_sum + 0.01)))
 
 
 def vis_all_detection(im_array, detections, class_names, scale, cfg, threshold=1e-3):
@@ -339,4 +341,3 @@ def vis_all_detection(im_array, detections, class_names, scale, cfg, threshold=1
                            '{:s} {:.3f}'.format(name, score),
                            bbox=dict(facecolor=color, alpha=0.5), fontsize=12, color='white')
     plt.show()
-

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import keras 
 
 from keras_applications import get_keras_submodule
 
@@ -30,10 +29,9 @@ models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
 
 from keras_applications import imagenet_utils
-from keras_applications.imagenet_utils import decode_predictions
-from keras_applications.imagenet_utils import _obtain_input_shape
 
 import sys
+
 sys.path.insert(0, ".")
 
 BASE_WEIGHT_URL = ('https://github.com/fchollet/deep-learning-models/'
@@ -347,7 +345,7 @@ def InceptionResNetV2(include_top=True,
                 cache_subdir='models',
                 file_hash='e693bd0210a403b3192acc6073ad2e96')
         else:
-            if channels == "gray": 
+            if channels == "gray":
                 weights_path = "/users/ipan/scratch/grayscale-models/weights/inception_resnet_v2_gray.h5"
             else:
                 fname = ('inception_resnet_v2_weights_'

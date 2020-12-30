@@ -11,16 +11,13 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import _init_paths
-
-import cv2
-import time
 import argparse
 import logging
-import pprint
 import os
 import sys
+
 from config.config import config, update_config
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train R-FCN network')
@@ -36,12 +33,11 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
 
-import shutil
-import numpy as np
 import mxnet as mx
 
 from function.train_rpn import train_rpn
@@ -49,6 +45,7 @@ from function.test_rpn import test_rpn
 from function.train_rcnn import train_rcnn
 from utils.combine_model import combine_model
 from utils.create_logger import create_logger
+
 
 def alternate_train(args, ctx, pretrained, epoch):
     # set up logger
@@ -64,10 +61,12 @@ def alternate_train(args, ctx, pretrained, epoch):
         os.makedirs(rpn1_prefix)
 
     config.TRAIN.BATCH_IMAGES = config.TRAIN.ALTERNATE.RPN_BATCH_IMAGES
-    train_rpn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path, config.dataset.dataset_path,
+    train_rpn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path,
+              config.dataset.dataset_path,
               args.frequent, config.default.kvstore, config.TRAIN.FLIP, config.TRAIN.SHUFFLE, config.TRAIN.RESUME,
               ctx, pretrained, epoch, rpn1_prefix, begin_epoch, config.TRAIN.ALTERNATE.rpn1_epoch, train_shared=False,
-              lr=config.TRAIN.ALTERNATE.rpn1_lr, lr_step=config.TRAIN.ALTERNATE.rpn1_lr_step, logger=logger, output_path=output_path)
+              lr=config.TRAIN.ALTERNATE.rpn1_lr, lr_step=config.TRAIN.ALTERNATE.rpn1_lr_step, logger=logger,
+              output_path=output_path)
 
     logging.info('########## GENERATE RPN DETECTION')
     image_sets = [iset for iset in config.dataset.image_set.split('+')]
@@ -80,10 +79,13 @@ def alternate_train(args, ctx, pretrained, epoch):
     logging.info('########## TRAIN rfcn WITH IMAGENET INIT AND RPN DETECTION')
     rfcn1_prefix = os.path.join(output_path, 'rfcn1')
     config.TRAIN.BATCH_IMAGES = config.TRAIN.ALTERNATE.RCNN_BATCH_IMAGES
-    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path, config.dataset.dataset_path,
+    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path,
+               config.dataset.dataset_path,
                args.frequent, config.default.kvstore, config.TRAIN.FLIP, config.TRAIN.SHUFFLE, config.TRAIN.RESUME,
-               ctx, pretrained, epoch, rfcn1_prefix, begin_epoch, config.TRAIN.ALTERNATE.rfcn1_epoch, train_shared=False,
-               lr=config.TRAIN.ALTERNATE.rfcn1_lr, lr_step=config.TRAIN.ALTERNATE.rfcn1_lr_step, proposal='rpn', logger=logger,
+               ctx, pretrained, epoch, rfcn1_prefix, begin_epoch, config.TRAIN.ALTERNATE.rfcn1_epoch,
+               train_shared=False,
+               lr=config.TRAIN.ALTERNATE.rfcn1_lr, lr_step=config.TRAIN.ALTERNATE.rfcn1_lr_step, proposal='rpn',
+               logger=logger,
                output_path=rpn1_prefix)
 
     logging.info('########## TRAIN RPN WITH rfcn INIT')
@@ -93,10 +95,13 @@ def alternate_train(args, ctx, pretrained, epoch):
         os.makedirs(rpn2_prefix)
 
     config.TRAIN.BATCH_IMAGES = config.TRAIN.ALTERNATE.RPN_BATCH_IMAGES
-    train_rpn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path, config.dataset.dataset_path,
+    train_rpn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path,
+              config.dataset.dataset_path,
               args.frequent, config.default.kvstore, config.TRAIN.FLIP, config.TRAIN.SHUFFLE, config.TRAIN.RESUME,
-              ctx, rfcn1_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rpn2_prefix, begin_epoch, config.TRAIN.ALTERNATE.rpn2_epoch,
-              train_shared=True, lr=config.TRAIN.ALTERNATE.rpn2_lr, lr_step=config.TRAIN.ALTERNATE.rpn2_lr_step, logger=logger,
+              ctx, rfcn1_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rpn2_prefix, begin_epoch,
+              config.TRAIN.ALTERNATE.rpn2_epoch,
+              train_shared=True, lr=config.TRAIN.ALTERNATE.rpn2_lr, lr_step=config.TRAIN.ALTERNATE.rpn2_lr_step,
+              logger=logger,
               output_path=output_path)
 
     logging.info('########## GENERATE RPN DETECTION')
@@ -108,24 +113,30 @@ def alternate_train(args, ctx, pretrained, epoch):
 
     logger.info('########## COMBINE RPN2 WITH rfcn1')
     rfcn2_prefix = os.path.join(output_path, 'rfcn2')
-    combine_model(rpn2_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rfcn1_prefix, config.TRAIN.ALTERNATE.rfcn1_epoch, rfcn2_prefix, 0)
+    combine_model(rpn2_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rfcn1_prefix, config.TRAIN.ALTERNATE.rfcn1_epoch,
+                  rfcn2_prefix, 0)
 
     logger.info('########## TRAIN rfcn WITH RPN INIT AND DETECTION')
     config.TRAIN.BATCH_IMAGES = config.TRAIN.ALTERNATE.RCNN_BATCH_IMAGES
-    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path, config.dataset.dataset_path,
+    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path,
+               config.dataset.dataset_path,
                args.frequent, config.default.kvstore, config.TRAIN.FLIP, config.TRAIN.SHUFFLE, config.TRAIN.RESUME,
                ctx, rfcn2_prefix, 0, rfcn2_prefix, begin_epoch, config.TRAIN.ALTERNATE.rfcn2_epoch, train_shared=True,
-               lr=config.TRAIN.ALTERNATE.rfcn2_lr, lr_step=config.TRAIN.ALTERNATE.rfcn2_lr_step, proposal='rpn', logger=logger,
+               lr=config.TRAIN.ALTERNATE.rfcn2_lr, lr_step=config.TRAIN.ALTERNATE.rfcn2_lr_step, proposal='rpn',
+               logger=logger,
                output_path=rpn2_prefix)
 
     logger.info('########## COMBINE RPN2 WITH rfcn2')
     final_prefix = os.path.join(output_path, 'final')
-    combine_model(rpn2_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rfcn2_prefix, config.TRAIN.ALTERNATE.rfcn2_epoch, final_prefix, 0)
+    combine_model(rpn2_prefix, config.TRAIN.ALTERNATE.rpn2_epoch, rfcn2_prefix, config.TRAIN.ALTERNATE.rfcn2_epoch,
+                  final_prefix, 0)
+
 
 def main():
     print('Called with argument:', args)
     ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
     alternate_train(args, ctx, config.network.pretrained, config.network.pretrained_epoch)
+
 
 if __name__ == '__main__':
     main()

@@ -16,20 +16,23 @@ varying with training iterations. If shapes vary, executors will rebind,
 using shared arrays from the initial module binded with maximum shape.
 """
 
-import time
 import logging
+import time
 import warnings
 
 from mxnet import context as ctx
-from mxnet.initializer import Uniform, InitDesc
-from mxnet.module.base_module import BaseModule, _check_input_names, _parse_data_desc, _as_list
-from mxnet.model import _create_kvstore, _initialize_kvstore, _update_params, _update_params_on_kvstore, load_checkpoint, BatchEndParam
 from mxnet import metric
-# from mxnet.module.executor_group import DataParallelExecutorGroup
-
-from .DataParallelExecutorGroup import DataParallelExecutorGroup
 from mxnet import ndarray as nd
 from mxnet import optimizer as opt
+from mxnet.initializer import Uniform, InitDesc
+from mxnet.model import _create_kvstore, _initialize_kvstore, _update_params, _update_params_on_kvstore, \
+    load_checkpoint, BatchEndParam
+from mxnet.module.base_module import BaseModule, _check_input_names, _parse_data_desc, _as_list
+
+from .DataParallelExecutorGroup import DataParallelExecutorGroup
+
+
+# from mxnet.module.executor_group import DataParallelExecutorGroup
 
 
 class Module(BaseModule):
@@ -56,6 +59,7 @@ class Module(BaseModule):
         states are similar to data and label, but not provided by data iterator.
         Instead they are initialized to 0 and can be set by set_states()
     """
+
     def __init__(self, symbol, data_names=('data',), label_names=('softmax_label',),
                  logger=logging, context=ctx.cpu(), work_load_list=None,
                  fixed_param_names=None, state_names=None):
@@ -142,7 +146,7 @@ class Module(BaseModule):
         mod._aux_params = auxs
         mod.params_initialized = True
         if load_optimizer_states:
-            mod._preload_opt_states = '%s-%04d.states'%(prefix, epoch)
+            mod._preload_opt_states = '%s-%04d.states' % (prefix, epoch)
         return mod
 
     def save_checkpoint(self, prefix, epoch, save_optimizer_states=False):
@@ -158,7 +162,7 @@ class Module(BaseModule):
         save_optimizer_states : bool
             Whether to save optimizer states for continue training
         """
-        self._symbol.save('%s-symbol.json'%prefix)
+        self._symbol.save('%s-symbol.json' % prefix)
         param_name = '%s-%04d.params' % (prefix, epoch)
         self.save_params(param_name)
         logging.info('Saved checkpoint to \"%s\"', param_name)
@@ -380,14 +384,15 @@ class Module(BaseModule):
 
         # self._data_shapes, self._label_shapes = _parse_data_desc(
         #     self.data_names, self.label_names, data_shapes, label_shapes)
-        self._data_shapes, self._label_shapes = zip(*[_parse_data_desc(self.data_names, self.label_names, data_shape, label_shape)
-                                                      for data_shape, label_shape in zip(data_shapes, label_shapes)])
+        self._data_shapes, self._label_shapes = zip(
+            *[_parse_data_desc(self.data_names, self.label_names, data_shape, label_shape)
+              for data_shape, label_shape in zip(data_shapes, label_shapes)])
         if self._label_shapes.count(None) == len(self._label_shapes):
             self._label_shapes = None
 
         if shared_module is not None:
             assert isinstance(shared_module, Module) and \
-                    shared_module.binded and shared_module.params_initialized
+                   shared_module.binded and shared_module.params_initialized
             shared_group = shared_module._exec_group
         else:
             shared_group = None
@@ -414,17 +419,16 @@ class Module(BaseModule):
                 nd.zeros(x[0].shape, dtype=x[0].dtype)
                 for x in self._exec_group.param_arrays
             ]
-            self._arg_params = {name:arr for name, arr in zip(self._param_names, param_arrays)}
+            self._arg_params = {name: arr for name, arr in zip(self._param_names, param_arrays)}
 
             aux_arrays = [
                 nd.zeros(x[0].shape, dtype=x[0].dtype)
                 for x in self._exec_group.aux_arrays
             ]
-            self._aux_params = {name:arr for name, arr in zip(self._aux_names, aux_arrays)}
+            self._aux_params = {name: arr for name, arr in zip(self._aux_names, aux_arrays)}
 
         if shared_module is not None and shared_module.optimizer_initialized:
             self.borrow_optimizer(shared_module)
-
 
     def reshape(self, data_shapes, label_shapes=None):
         """Reshape the module for new input shapes.
@@ -439,11 +443,11 @@ class Module(BaseModule):
         assert self.binded
         # self._data_shapes, self._label_shapes = _parse_data_desc(
         #     self.data_names, self.label_names, data_shapes, label_shapes)
-        self._data_shapes, self._label_shapes = zip(*[_parse_data_desc(self.data_names, self.label_names, data_shape, label_shape)
-                                                      for data_shape, label_shape in zip(data_shapes, label_shapes)])
+        self._data_shapes, self._label_shapes = zip(
+            *[_parse_data_desc(self.data_names, self.label_names, data_shape, label_shape)
+              for data_shape, label_shape in zip(data_shapes, label_shapes)])
 
         self._exec_group.reshape(self._data_shapes, self._label_shapes)
-
 
     def init_optimizer(self, kvstore='local', optimizer='sgd',
                        optimizer_params=(('learning_rate', 0.01),), force_init=False):
@@ -469,12 +473,12 @@ class Module(BaseModule):
             return
 
         (kvstore, update_on_kvstore) = \
-                _create_kvstore(kvstore, len(self._context), self._arg_params)
+            _create_kvstore(kvstore, len(self._context), self._arg_params)
 
         batch_size = self._exec_group.batch_size
         if kvstore and 'dist' in kvstore.type and '_sync' in kvstore.type:
             batch_size *= kvstore.num_workers
-        rescale_grad = 1.0/batch_size
+        rescale_grad = 1.0 / batch_size
 
         if isinstance(optimizer, str):
             idx2name = {}
@@ -482,7 +486,7 @@ class Module(BaseModule):
                 idx2name.update(enumerate(self._exec_group.param_names))
             else:
                 for k in range(len(self._context)):
-                    idx2name.update({i*len(self._context)+k: n
+                    idx2name.update({i * len(self._context) + k: n
                                      for i, n in enumerate(self._exec_group.param_names)})
             optimizer_params = dict(optimizer_params)
             if 'rescale_grad' not in optimizer_params:
@@ -493,10 +497,10 @@ class Module(BaseModule):
         else:
             assert isinstance(optimizer, opt.Optimizer)
             if optimizer.rescale_grad != rescale_grad:
-                #pylint: disable=no-member
+                # pylint: disable=no-member
                 warnings.warn(
                     "Optimizer created manually outside Module but rescale_grad " +
-                    "is not normalized to 1.0/batch_size/num_workers (%s vs. %s). "%(
+                    "is not normalized to 1.0/batch_size/num_workers (%s vs. %s). " % (
                         optimizer.rescale_grad, rescale_grad) +
                     "Is this intended?", stacklevel=2)
 
@@ -717,8 +721,6 @@ class Module(BaseModule):
         self._exec_group.install_monitor(mon)
 
 
-
-
 class MutableModule(BaseModule):
     """A mutable module is a module that supports variable input data.
 
@@ -734,6 +736,7 @@ class MutableModule(BaseModule):
     max_label_shapes : list of (name, shape) tuple, designating inputs whose shape vary
     fixed_param_prefix : list of str, indicating fixed parameters
     """
+
     def __init__(self, symbol, data_names, label_names,
                  logger=logging, context=ctx.cpu(), work_load_list=None,
                  max_data_shapes=None, max_label_shapes=None, fixed_param_prefix=None):
@@ -847,7 +850,8 @@ class MutableModule(BaseModule):
         module = Module(self._symbol, self._data_names, self._label_names, logger=self.logger,
                         context=self._context, work_load_list=self._work_load_list,
                         fixed_param_names=self._fixed_param_names)
-        module.bind([max_data_shapes for _ in range(len(self._context))], [max_label_shapes for _ in range(len(self._context))],
+        module.bind([max_data_shapes for _ in range(len(self._context))],
+                    [max_label_shapes for _ in range(len(self._context))],
                     for_training, inputs_need_grad, force_rebind=False, shared_module=None)
         self._curr_module = module
 
@@ -997,7 +1001,7 @@ class MutableModule(BaseModule):
             for name, val in eval_metric.get_name_value():
                 self.logger.info('Epoch[%d] Train-%s=%f', epoch, name, val)
             toc = time.time()
-            self.logger.info('Epoch[%d] Time cost=%.3f', epoch, (toc-tic))
+            self.logger.info('Epoch[%d] Time cost=%.3f', epoch, (toc - tic))
 
             # sync aux params across devices
             arg_params, aux_params = self.get_params()
@@ -1007,32 +1011,33 @@ class MutableModule(BaseModule):
                 for callback in _as_list(epoch_end_callback):
                     callback(epoch, self.symbol, arg_params, aux_params)
 
-            #----------------------------------------
+            # ----------------------------------------
             # evaluation on validation set
             if eval_data:
                 res = self.score(eval_data, validation_metric,
                                  score_end_callback=eval_end_callback,
                                  batch_end_callback=eval_batch_end_callback, epoch=epoch)
-                #TODO: pull this into default
+                # TODO: pull this into default
                 for name, val in res:
                     self.logger.info('Epoch[%d] Validation-%s=%f', epoch, name, val)
 
             # end of 1 epoch, reset the data-iter for another epoch
             train_data.reset()
 
-
     def forward(self, data_batch, is_train=None):
         assert self.binded and self.params_initialized
 
         # get current_shapes
         if self._curr_module.label_shapes is not None:
-            current_shapes = [dict(self._curr_module.data_shapes[i] + self._curr_module.label_shapes[i]) for i in range(len(self._context))]
+            current_shapes = [dict(self._curr_module.data_shapes[i] + self._curr_module.label_shapes[i]) for i in
+                              range(len(self._context))]
         else:
             current_shapes = [dict(self._curr_module.data_shapes[i]) for i in range(len(self._context))]
 
         # get input_shapes
         if is_train:
-            input_shapes = [dict(data_batch.provide_data[i] + data_batch.provide_label[i]) for i in range(len(self._context))]
+            input_shapes = [dict(data_batch.provide_data[i] + data_batch.provide_label[i]) for i in
+                            range(len(self._context))]
         else:
             input_shapes = [dict(data_batch.provide_data[i]) for i in range(len(data_batch.provide_data))]
 
@@ -1067,6 +1072,7 @@ class MutableModule(BaseModule):
     def get_outputs(self, merge_multi_context=True):
         assert self.binded and self.params_initialized
         return self._curr_module.get_outputs(merge_multi_context=merge_multi_context)
+
     def get_input_grads(self, merge_multi_context=True):
         assert self.binded and self.params_initialized and self.inputs_need_grad
         return self._curr_module.get_input_grads(merge_multi_context=merge_multi_context)

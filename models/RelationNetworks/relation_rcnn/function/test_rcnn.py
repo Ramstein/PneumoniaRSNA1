@@ -12,17 +12,12 @@
 # --------------------------------------------------------
 
 
-import argparse
 import pprint
-import logging
-import time
-import os
-import mxnet as mx
 
-from symbols import *
-from dataset import *
 from core.loader import TestLoader
 from core.tester import Predictor, pred_eval
+from dataset import *
+from symbols import *
 from utils.load_model import load_param
 
 
@@ -58,33 +53,33 @@ def test_rcnn(cfg, dataset, image_set, root_path, dataset_path,
 
     # infer shape
     data_shape_dict = dict(test_data.provide_data_single)
-    #sym_instance.infer_shape(data_shape_dict)
+    # sym_instance.infer_shape(data_shape_dict)
 
-    #sym_instance.check_parameter_shapes(arg_params, aux_params, data_shape_dict, is_train=False)
+    # sym_instance.check_parameter_shapes(arg_params, aux_params, data_shape_dict, is_train=False)
 
     # decide maximum shape
     data_names = [k[0] for k in test_data.provide_data_single]
     label_names = None
-    #max_data_shape = [[('data', (1, 3, max([v[0] for v in cfg.SCALES]), max([v[1] for v in cfg.SCALES])))]]
+    # max_data_shape = [[('data', (1, 3, max([v[0] for v in cfg.SCALES]), max([v[1] for v in cfg.SCALES])))]]
     max_height = max([v[0] for v in cfg.SCALES])
     max_width = max([v[1] for v in cfg.SCALES])
     if cfg.network.IMAGE_STRIDE > 0:
-        max_height = max_height + cfg.network.IMAGE_STRIDE - max_height%cfg.network.IMAGE_STRIDE
+        max_height = max_height + cfg.network.IMAGE_STRIDE - max_height % cfg.network.IMAGE_STRIDE
         max_width = max_width + cfg.network.IMAGE_STRIDE - max_width % cfg.network.IMAGE_STRIDE
 
     max_data_shape = [('data', (cfg.TRAIN.BATCH_IMAGES, 3, max_height, max_width))]
 
     if not has_rpn:
-        #max_data_shape.append(('rois', (cfg.TEST.PROPOSAL_POST_NMS_TOP_N + 30, 5)))
+        # max_data_shape.append(('rois', (cfg.TEST.PROPOSAL_POST_NMS_TOP_N + 30, 5)))
         if cfg.network.ROIDispatch:
-            max_data_shape.append(('rois_0', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N/4, 5)))
-            max_data_shape.append(('rois_1', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N/4, 5)))
-            max_data_shape.append(('rois_2', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N/4, 5)))
-            max_data_shape.append(('rois_3', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N/4, 5)))
+            max_data_shape.append(('rois_0', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N / 4, 5)))
+            max_data_shape.append(('rois_1', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N / 4, 5)))
+            max_data_shape.append(('rois_2', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N / 4, 5)))
+            max_data_shape.append(('rois_3', (1, cfg.TEST.PROPOSAL_POST_NMS_TOP_N / 4, 5)))
 
     max_data_shape = [max_data_shape]
     # create predictor
-    #test_data.provide_label
+    # test_data.provide_label
     predictor = Predictor(sym, data_names, label_names,
                           context=ctx, max_data_shapes=max_data_shape,
                           provide_data=test_data.provide_data, provide_label=test_data.provide_label,
@@ -92,4 +87,3 @@ def test_rcnn(cfg, dataset, image_set, root_path, dataset_path,
 
     # start detection
     pred_eval(predictor, test_data, imdb, cfg, vis=vis, ignore_cache=ignore_cache, thresh=thresh, logger=logger)
-

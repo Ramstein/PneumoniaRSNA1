@@ -1,8 +1,6 @@
-import keras_retinanet.losses
 import keras
-
+import keras_retinanet.losses
 import numpy as np
-
 import pytest
 
 

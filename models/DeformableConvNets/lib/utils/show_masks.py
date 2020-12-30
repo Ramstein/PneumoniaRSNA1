@@ -5,12 +5,14 @@
 # Written by Yuwen Xiong
 # --------------------------------------------------------
 
-import numpy as np
-import matplotlib.pyplot as plt
 import random
-import cv2
 
-def show_masks(im, dets, msks, show = True, thresh = 1e-3, scale = 1.0):
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def show_masks(im, dets, msks, show=True, thresh=1e-3, scale=1.0):
     plt.cla()
     plt.imshow(im)
     for det, msk in zip(dets, msks):
@@ -33,7 +35,6 @@ def show_masks(im, dets, msks, show = True, thresh = 1e-3, scale = 1.0):
             clmsk[:, :, 2] = clmsk[:, :, 2] * color[2] * 256;
             im[cod[1]:cod[3], cod[0]:cod[2], :] = im[cod[1]:cod[3], cod[0]:cod[2], :] + 0.8 * clmsk - 0.8 * mskd
     plt.imshow(im)
-    if(show):
+    if (show):
         plt.show()
     return im
-

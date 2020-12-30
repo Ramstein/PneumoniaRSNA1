@@ -11,8 +11,8 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import yaml
 import numpy as np
+import yaml
 from easydict import EasyDict as edict
 
 config = edict()
@@ -52,7 +52,6 @@ config.dataset.root_path = './data'
 config.dataset.dataset_path = './data/VOCdevkit'
 config.dataset.NUM_CLASSES = 21
 
-
 config.TRAIN = edict()
 
 config.TRAIN.lr = 0
@@ -71,21 +70,21 @@ config.TRAIN.ALTERNATE = edict()
 config.TRAIN.ALTERNATE.RPN_BATCH_IMAGES = 0
 config.TRAIN.ALTERNATE.RCNN_BATCH_IMAGES = 0
 config.TRAIN.ALTERNATE.rpn1_lr = 0
-config.TRAIN.ALTERNATE.rpn1_lr_step = ''    # recommend '2'
-config.TRAIN.ALTERNATE.rpn1_epoch = 0       # recommend 3
+config.TRAIN.ALTERNATE.rpn1_lr_step = ''  # recommend '2'
+config.TRAIN.ALTERNATE.rpn1_epoch = 0  # recommend 3
 config.TRAIN.ALTERNATE.rfcn1_lr = 0
-config.TRAIN.ALTERNATE.rfcn1_lr_step = ''   # recommend '5'
-config.TRAIN.ALTERNATE.rfcn1_epoch = 0      # recommend 8
+config.TRAIN.ALTERNATE.rfcn1_lr_step = ''  # recommend '5'
+config.TRAIN.ALTERNATE.rfcn1_epoch = 0  # recommend 8
 config.TRAIN.ALTERNATE.rpn2_lr = 0
-config.TRAIN.ALTERNATE.rpn2_lr_step = ''    # recommend '2'
-config.TRAIN.ALTERNATE.rpn2_epoch = 0       # recommend 3
+config.TRAIN.ALTERNATE.rpn2_lr_step = ''  # recommend '2'
+config.TRAIN.ALTERNATE.rpn2_epoch = 0  # recommend 3
 config.TRAIN.ALTERNATE.rfcn2_lr = 0
-config.TRAIN.ALTERNATE.rfcn2_lr_step = ''   # recommend '5'
-config.TRAIN.ALTERNATE.rfcn2_epoch = 0      # recommend 8
+config.TRAIN.ALTERNATE.rfcn2_lr_step = ''  # recommend '5'
+config.TRAIN.ALTERNATE.rfcn2_epoch = 0  # recommend 8
 # optional
 config.TRAIN.ALTERNATE.rpn3_lr = 0
-config.TRAIN.ALTERNATE.rpn3_lr_step = ''    # recommend '2'
-config.TRAIN.ALTERNATE.rpn3_epoch = 0       # recommend 3
+config.TRAIN.ALTERNATE.rpn3_lr_step = ''  # recommend '2'
+config.TRAIN.ALTERNATE.rpn3_epoch = 0  # recommend 3
 
 # whether resume training
 config.TRAIN.RESUME = False

@@ -18,9 +18,11 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 
 from keras import backend as K
-from keras.models import Model
+from keras.applications import imagenet_utils
+from keras.engine.topology import get_source_inputs
 from keras.layers import Activation
 from keras.layers import AveragePooling2D
 from keras.layers import BatchNormalization
@@ -32,12 +34,9 @@ from keras.layers import GlobalMaxPooling2D
 from keras.layers import Input
 from keras.layers import MaxPooling2D
 from keras.layers import ZeroPadding2D
+from keras.models import Model
 from keras.utils.data_utils import get_file
-from keras.engine.topology import get_source_inputs
-from keras.applications import imagenet_utils
-from keras.applications.imagenet_utils import decode_predictions
 
-import sys
 sys.path.insert(0, ".")
 
 DENSENET121_WEIGHT_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.8/densenet121_weights_tf_dim_ordering_tf_kernels.h5'
@@ -178,7 +177,6 @@ def DenseNet(blocks,
         raise ValueError('If using `weights` as imagenet with `include_top`'
                          ' as true, `classes` should be 1000')
 
-
     if input_tensor is None:
         img_input = Input(shape=input_shape)
     else:
@@ -256,13 +254,13 @@ def DenseNet(blocks,
                     cache_subdir='models',
                     file_hash='7bb75edd58cb43163be7e0005fbe95ef')
         else:
-	    if channels == "gray": 
-            	if blocks == [6, 12, 24, 16]:
+            if channels == "gray":
+                if blocks == [6, 12, 24, 16]:
                     weights_path = "/users/ipan/scratch/grayscale-models/weights/densenet121_gray.h5"
                 elif blocks == [6, 12, 32, 32]:
                     weights_path = "/users/ipan/scratch/grayscale-models/weights/densenet169_gray.h5"
                 elif blocks == [6, 12, 48, 32]:
-		    weights_path = "/users/ipan/scratch/grayscale-models/weights/densenet201_gray.h5"
+                    weights_path = "/users/ipan/scratch/grayscale-models/weights/densenet201_gray.h5"
         model.load_weights(weights_path)
     elif weights is not None:
         model.load_weights(weights)

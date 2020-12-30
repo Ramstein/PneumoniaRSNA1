@@ -25,10 +25,9 @@ label =
 
 import numpy as np
 import numpy.random as npr
-
-from utils.image import get_image, tensor_vstack
-from generate_anchor import generate_anchors
 from bbox.bbox_transform import bbox_overlaps, bbox_transform
+from generate_anchor import generate_anchors
+from utils.image import get_image
 
 
 def get_rpn_testbatch(roidb, cfg):
@@ -43,7 +42,7 @@ def get_rpn_testbatch(roidb, cfg):
     im_info = [np.array([roidb[i]['im_info']], dtype=np.float32) for i in range(len(roidb))]
 
     data = [{'data': im_array[i],
-            'im_info': im_info[i]} for i in range(len(roidb))]
+             'im_info': im_info[i]} for i in range(len(roidb))]
     label = {}
 
     return data, label, im_info
@@ -76,7 +75,6 @@ def get_rpn_batch(roidb, cfg):
     return data, label
 
 
-
 def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
                   scales=(8, 16, 32), ratios=(0.5, 1, 2), allowed_border=0):
     """
@@ -94,6 +92,7 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
     'bbox_inside_weight': *todo* mark the assigned anchors
     'bbox_outside_weight': used to normalize the bbox_loss, all weights sums to RPN_POSITIVE_WEIGHT
     """
+
     def _unmap(data, count, inds, fill=0):
         """" unmap a subset inds of data into original data of size count """
         if len(data.shape) == 1:
@@ -114,15 +113,23 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
     feat_height, feat_width = feat_shape[-2:]
 
     if DEBUG:
-        print 'anchors:'
-        print base_anchors
-        print 'anchor shapes:'
-        print np.hstack((base_anchors[:, 2::4] - base_anchors[:, 0::4],
-                         base_anchors[:, 3::4] - base_anchors[:, 1::4]))
-        print 'im_info', im_info
-        print 'height', feat_height, 'width', feat_width
-        print 'gt_boxes shape', gt_boxes.shape
-        print 'gt_boxes', gt_boxes
+        print
+        'anchors:'
+        print
+        base_anchors
+        print
+        'anchor shapes:'
+        print
+        np.hstack((base_anchors[:, 2::4] - base_anchors[:, 0::4],
+                   base_anchors[:, 3::4] - base_anchors[:, 1::4]))
+        print
+        'im_info', im_info
+        print
+        'height', feat_height, 'width', feat_width
+        print
+        'gt_boxes shape', gt_boxes.shape
+        print
+        'gt_boxes', gt_boxes
 
     # 1. generate proposals from bbox deltas and shifted anchors
     shift_x = np.arange(0, feat_width) * feat_stride
@@ -145,13 +152,16 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
                            (all_anchors[:, 2] < im_info[1] + allowed_border) &
                            (all_anchors[:, 3] < im_info[0] + allowed_border))[0]
     if DEBUG:
-        print 'total_anchors', total_anchors
-        print 'inds_inside', len(inds_inside)
+        print
+        'total_anchors', total_anchors
+        print
+        'inds_inside', len(inds_inside)
 
     # keep only inside anchors
     anchors = all_anchors[inds_inside, :]
     if DEBUG:
-        print 'anchors shape', anchors.shape
+        print
+        'anchors shape', anchors.shape
 
     # label: 1 is positive, 0 is negative, -1 is dont care
     labels = np.empty((len(inds_inside),), dtype=np.float32)
@@ -214,8 +224,10 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
         _counts = np.sum(labels == 1)
         means = _sums / (_counts + 1e-14)
         stds = np.sqrt(_squared_sums / _counts - means ** 2)
-        print 'means', means
-        print 'stdevs', stds
+        print
+        'means', means
+        print
+        'stdevs', stds
 
     # map up to original set of anchors
     labels = _unmap(labels, total_anchors, inds_inside, fill=-1)
@@ -223,14 +235,19 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
     bbox_weights = _unmap(bbox_weights, total_anchors, inds_inside, fill=0)
 
     if DEBUG:
-        print 'rpn: max max_overlaps', np.max(max_overlaps)
-        print 'rpn: num_positives', np.sum(labels == 1)
-        print 'rpn: num_negatives', np.sum(labels == 0)
+        print
+        'rpn: max max_overlaps', np.max(max_overlaps)
+        print
+        'rpn: num_positives', np.sum(labels == 1)
+        print
+        'rpn: num_negatives', np.sum(labels == 0)
         _fg_sum = np.sum(labels == 1)
         _bg_sum = np.sum(labels == 0)
         _count = 1
-        print 'rpn: num_positive avg', _fg_sum / _count
-        print 'rpn: num_negative avg', _bg_sum / _count
+        print
+        'rpn: num_positive avg', _fg_sum / _count
+        print
+        'rpn: num_negative avg', _bg_sum / _count
 
     labels = labels.reshape((1, feat_height, feat_width, A)).transpose(0, 3, 1, 2)
     labels = labels.reshape((1, A * feat_height * feat_width))
@@ -244,7 +261,7 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
 
 
 def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 8, 16, 32, 64),
-                          scales=(8,), ratios=(0.5, 1, 2), allowed_border=0, balance_scale_bg=False,):
+                          scales=(8,), ratios=(0.5, 1, 2), allowed_border=0, balance_scale_bg=False, ):
     """
     assign ground truth boxes to anchor positions
     :param feat_shapes: infer output shape
@@ -261,6 +278,7 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
     'bbox_inside_weight': *todo* mark the assigned anchors
     'bbox_outside_weight': used to normalize the bbox_loss, all weights sums to RPN_POSITIVE_WEIGHT
     """
+
     def _unmap(data, count, inds, fill=0):
         """" unmap a subset inds of data into original data of size count """
         if len(data.shape) == 1:
@@ -277,7 +295,7 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
     im_info = im_info[0]
     scales = np.array(scales, dtype=np.float32)
     ratios = np.array(ratios, dtype=np.float32)
-    assert(len(feat_shapes) == len(feat_strides))
+    assert (len(feat_shapes) == len(feat_strides))
 
     fpn_args = []
     fpn_anchors_fid = np.zeros(0).astype(int)
@@ -290,7 +308,8 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
             base_anchors = generate_anchors(base_size=feat_strides[feat_id], ratios=ratios, scales=scales)
         else:
             assert len(scales.shape) == len(ratios.shape) == 2
-            base_anchors = generate_anchors(base_size=feat_strides[feat_id], ratios=ratios[feat_id], scales=scales[feat_id])
+            base_anchors = generate_anchors(base_size=feat_strides[feat_id], ratios=ratios[feat_id],
+                                            scales=scales[feat_id])
         num_anchors = base_anchors.shape[0]
         feat_height, feat_width = feat_shapes[feat_id][0][-2:]
 
@@ -353,7 +372,8 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
         fpn_labels[:] = 0
 
     # subsample positive labels if we have too many
-    num_fg = fpn_labels.shape[0] if cfg.TRAIN.RPN_BATCH_SIZE == -1 else int(cfg.TRAIN.RPN_FG_FRACTION * cfg.TRAIN.RPN_BATCH_SIZE)
+    num_fg = fpn_labels.shape[0] if cfg.TRAIN.RPN_BATCH_SIZE == -1 else int(
+        cfg.TRAIN.RPN_FG_FRACTION * cfg.TRAIN.RPN_BATCH_SIZE)
     fg_inds = np.where(fpn_labels >= 1)[0]
     if len(fg_inds) > num_fg:
         disable_inds = npr.choice(fg_inds, size=(len(fg_inds) - num_fg), replace=False)
@@ -362,14 +382,15 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
         fpn_labels[disable_inds] = -1
 
     # subsample negative labels if we have too many
-    num_bg = fpn_labels.shape[0] if cfg.TRAIN.RPN_BATCH_SIZE == -1 else cfg.TRAIN.RPN_BATCH_SIZE - np.sum(fpn_labels >= 1)
+    num_bg = fpn_labels.shape[0] if cfg.TRAIN.RPN_BATCH_SIZE == -1 else cfg.TRAIN.RPN_BATCH_SIZE - np.sum(
+        fpn_labels >= 1)
     bg_inds = np.where(fpn_labels == 0)[0]
     fpn_anchors_fid = np.hstack((0, fpn_anchors_fid.cumsum()))
 
     if balance_scale_bg:
         num_bg_scale = num_bg / len(feat_strides)
         for feat_id in range(0, len(feat_strides)):
-            bg_ind_scale = bg_inds[(bg_inds >= fpn_anchors_fid[feat_id]) & (bg_inds < fpn_anchors_fid[feat_id+1])]
+            bg_ind_scale = bg_inds[(bg_inds >= fpn_anchors_fid[feat_id]) & (bg_inds < fpn_anchors_fid[feat_id + 1])]
             if len(bg_ind_scale) > num_bg_scale:
                 disable_inds = npr.choice(bg_ind_scale, size=(len(bg_ind_scale) - num_bg_scale), replace=False)
                 fpn_labels[disable_inds] = -1
@@ -382,7 +403,8 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
 
     fpn_bbox_targets = np.zeros((len(fpn_anchors), 4), dtype=np.float32)
     if gt_boxes.size > 0:
-        fpn_bbox_targets[fpn_labels >= 1, :] = bbox_transform(fpn_anchors[fpn_labels >= 1, :], gt_boxes[argmax_overlaps[fpn_labels >= 1], :4])
+        fpn_bbox_targets[fpn_labels >= 1, :] = bbox_transform(fpn_anchors[fpn_labels >= 1, :],
+                                                              gt_boxes[argmax_overlaps[fpn_labels >= 1], :4])
         # fpn_bbox_targets[:] = bbox_transform(fpn_anchors, gt_boxes[argmax_overlaps, :4])
     # fpn_bbox_targets = (fpn_bbox_targets - np.array(cfg.TRAIN.BBOX_MEANS)) / np.array(cfg.TRAIN.BBOX_STDS)
     fpn_bbox_weights = np.zeros((len(fpn_anchors), 4), dtype=np.float32)
@@ -395,9 +417,12 @@ def assign_pyramid_anchor(feat_shapes, gt_boxes, im_info, cfg, feat_strides=(4, 
     for feat_id in range(0, len(feat_strides)):
         feat_height, feat_width, A, total_anchors = fpn_args[feat_id]
         # map up to original set of anchors
-        labels = _unmap(fpn_labels[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id+1]], total_anchors, fpn_inds_inside[feat_id], fill=-1)
-        bbox_targets = _unmap(fpn_bbox_targets[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id+1]], total_anchors, fpn_inds_inside[feat_id], fill=0)
-        bbox_weights = _unmap(fpn_bbox_weights[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id+1]], total_anchors, fpn_inds_inside[feat_id], fill=0)
+        labels = _unmap(fpn_labels[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id + 1]], total_anchors,
+                        fpn_inds_inside[feat_id], fill=-1)
+        bbox_targets = _unmap(fpn_bbox_targets[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id + 1]], total_anchors,
+                              fpn_inds_inside[feat_id], fill=0)
+        bbox_weights = _unmap(fpn_bbox_weights[fpn_anchors_fid[feat_id]:fpn_anchors_fid[feat_id + 1]], total_anchors,
+                              fpn_inds_inside[feat_id], fill=0)
 
         labels = labels.reshape((1, feat_height, feat_width, A)).transpose(0, 3, 1, 2)
         labels = labels.reshape((1, A * feat_height * feat_width))

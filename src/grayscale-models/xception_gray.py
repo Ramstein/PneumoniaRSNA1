@@ -21,7 +21,6 @@ from __future__ import print_function
 import os
 import warnings
 
-import keras
 from keras_applications import get_keras_submodule
 
 backend = get_keras_submodule('backend')
@@ -31,9 +30,9 @@ models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
 
 from keras.applications import imagenet_utils
-from keras.applications.imagenet_utils import decode_predictions
 
 import sys
+
 sys.path.insert(0, ".")
 
 TF_WEIGHTS_PATH = (
@@ -306,7 +305,7 @@ def Xception(include_top=True,
                 cache_subdir='models',
                 file_hash='0a58e3b7378bc2990ea3b43d5981f1f6')
         else:
-            if channels == "gray": 
+            if channels == "gray":
                 weights_path = "/users/ipan/scratch/grayscale-models/weights/xception_gray.h5"
         model.load_weights(weights_path)
         if backend.backend() == 'theano':

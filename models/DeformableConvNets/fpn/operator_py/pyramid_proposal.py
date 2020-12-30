@@ -5,14 +5,14 @@
 # Written by Haozhi Qi
 # --------------------------------------------------------
 
+from distutils.util import strtobool
+
 import mxnet as mx
 import numpy as np
 import numpy.random as npr
-from distutils.util import strtobool
-
 from bbox.bbox_transform import bbox_pred, clip_boxes
-from rpn.generate_anchor import generate_anchors
 from nms.nms import gpu_nms_wrapper
+from rpn.generate_anchor import generate_anchors
 
 DEBUG = False
 
@@ -197,7 +197,8 @@ class PyramidProposalOperator(mx.operator.CustomOp):
 @mx.operator.register("pyramid_proposal")
 class PyramidProposalProp(mx.operator.CustomOpProp):
     def __init__(self, feat_stride='(64, 32, 16, 8, 4)', scales='(8)', ratios='(0.5, 1, 2)', output_score='False',
-                 rpn_pre_nms_top_n='12000', rpn_post_nms_top_n='2000', threshold='0.3', rpn_min_size='16', output_pyramid_rois='False'):
+                 rpn_pre_nms_top_n='12000', rpn_post_nms_top_n='2000', threshold='0.3', rpn_min_size='16',
+                 output_pyramid_rois='False'):
         super(PyramidProposalProp, self).__init__(need_top_grad=False)
         self._feat_stride = feat_stride
         self._scales = scales
@@ -241,7 +242,8 @@ class PyramidProposalProp(mx.operator.CustomOpProp):
 
     def create_operator(self, ctx, shapes, dtypes):
         return PyramidProposalOperator(self._feat_stride, self._scales, self._ratios, self._output_score,
-                                       self._rpn_pre_nms_top_n, self._rpn_post_nms_top_n, self._threshold, self._rpn_min_size)
+                                       self._rpn_pre_nms_top_n, self._rpn_post_nms_top_n, self._threshold,
+                                       self._rpn_min_size)
 
     def declare_backward_dependency(self, out_grad, in_data, out_data):
         return []

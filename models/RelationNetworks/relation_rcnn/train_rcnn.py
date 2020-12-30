@@ -10,16 +10,14 @@
 # Licence under The Apache 2.0 License
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
-											  
-import _init_paths
 
-import time
 import argparse
 import logging
-import pprint
 import os
 import sys
+
 from config.config import config, update_config
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN network')
@@ -35,22 +33,20 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
 
 import shutil
-import numpy as np
 import mxnet as mx
 
-from function.train_rpn import train_rpn
-from function.test_rpn import test_rpn
 from function.train_rcnn import train_rcnn
 from utils.create_logger import create_logger
 
 
 def main():
-    print ('Called with argument:', args)
+    print('Called with argument:', args)
     ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
     logger, output_path = create_logger(config.output_path, args.cfg, config.dataset.image_set)
     shutil.copy2(os.path.join(curr_path, 'symbols', config.symbol + '.py'), output_path)
@@ -58,11 +54,13 @@ def main():
     assert config.TRAIN.END2END == False
     prefix = os.path.join(output_path, config.TRAIN.model_prefix)
     logging.info('########## TRAIN rcnn WITH IMAGENET INIT AND RPN DETECTION')
-    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path, config.dataset.dataset_path,
+    train_rcnn(config, config.dataset.dataset, config.dataset.image_set, config.dataset.root_path,
+               config.dataset.dataset_path,
                args.frequent, config.default.kvstore, config.TRAIN.FLIP, config.TRAIN.SHUFFLE, config.TRAIN.RESUME,
                ctx, config.network.pretrained, config.network.pretrained_epoch, prefix, config.TRAIN.begin_epoch,
                config.TRAIN.end_epoch, train_shared=False, lr=config.TRAIN.lr, lr_step=config.TRAIN.lr_step,
                proposal=config.dataset.proposal, logger=logger, output_path=output_path)
+
 
 if __name__ == '__main__':
     main()

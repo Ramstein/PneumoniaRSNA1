@@ -11,12 +11,10 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import _init_paths
-
-import cv2
 import argparse
 import os
 import sys
+
 from config.config import config, update_config
 
 
@@ -36,6 +34,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
@@ -47,13 +46,19 @@ from utils.create_logger import create_logger
 
 def main():
     ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
-    print args
+    print
+    args
 
     logger, final_output_path = create_logger(config.output_path, args.cfg, config.dataset.test_image_set)
 
-    test_rcnn(config, config.dataset.dataset, config.dataset.test_image_set, config.dataset.root_path, config.dataset.dataset_path,
-              ctx, os.path.join(final_output_path, '..', '_'.join([iset for iset in config.dataset.image_set.split('+')]), config.TRAIN.model_prefix), config.TEST.test_epoch,
-              args.vis, args.ignore_cache, args.shuffle, config.TEST.HAS_RPN, config.dataset.proposal, args.thresh, logger=logger, output_path=final_output_path)
+    test_rcnn(config, config.dataset.dataset, config.dataset.test_image_set, config.dataset.root_path,
+              config.dataset.dataset_path,
+              ctx,
+              os.path.join(final_output_path, '..', '_'.join([iset for iset in config.dataset.image_set.split('+')]),
+                           config.TRAIN.model_prefix), config.TEST.test_epoch,
+              args.vis, args.ignore_cache, args.shuffle, config.TEST.HAS_RPN, config.dataset.proposal, args.thresh,
+              logger=logger, output_path=final_output_path)
+
 
 if __name__ == '__main__':
     main()

@@ -73,7 +73,7 @@ class RCNNAccMetric(mx.metric.EvalMetric):
 
         last_dim = pred.shape[-1]
         pred_label = pred.asnumpy().reshape(-1, last_dim).argmax(axis=1).astype('int32')
-        label = label.asnumpy().reshape(-1,).astype('int32')
+        label = label.asnumpy().reshape(-1, ).astype('int32')
 
         # filter with keep_inds
         keep_inds = np.where(label != -1)
@@ -127,7 +127,7 @@ class RCNNLogLossMetric(mx.metric.EvalMetric):
 
         last_dim = pred.shape[-1]
         pred = pred.asnumpy().reshape(-1, last_dim)
-        label = label.asnumpy().reshape(-1,).astype('int32')
+        label = label.asnumpy().reshape(-1, ).astype('int32')
 
         # filter with keep_inds
         keep_inds = np.where(label != -1)[0]
@@ -209,7 +209,7 @@ class NMSLossMetric(mx.metric.EvalMetric):
 class NMSAccMetric(mx.metric.EvalMetric):
     def __init__(self, cfg):
         assert cfg.TRAIN.LEARN_NMS, 'config set learn nms to be false'
-        self._suffixes=['pos', 'neg']
+        self._suffixes = ['pos', 'neg']
         super(NMSAccMetric, self).__init__('NMSAcc')
 
     def reset(self):
@@ -221,7 +221,7 @@ class NMSAccMetric(mx.metric.EvalMetric):
         name = []
         value = []
         for idx, num_inst in enumerate(self.num_inst):
-            name.append(self.name + '_' +self._suffixes[idx])
+            name.append(self.name + '_' + self._suffixes[idx])
             if num_inst == 0:
                 value.append(float('nan'))
             else:
@@ -252,7 +252,7 @@ class NMSAccValidMetric(mx.metric.EvalMetric):
     def __init__(self, cfg):
         assert cfg.TRAIN.LEARN_NMS, 'config set learn nms to be false'
         assert cfg.TRAIN.INSTANCE_WEIGHT, 'config set instance weight to be false'
-        self._suffixes=['pos', 'neg']
+        self._suffixes = ['pos', 'neg']
         super(NMSAccValidMetric, self).__init__('NMSAccValid')
 
     def reset(self):
@@ -264,7 +264,7 @@ class NMSAccValidMetric(mx.metric.EvalMetric):
         name = []
         value = []
         for idx, num_inst in enumerate(self.num_inst):
-            name.append(self.name + '_' +self._suffixes[idx])
+            name.append(self.name + '_' + self._suffixes[idx])
             if num_inst == 0:
                 value.append(float('nan'))
             else:

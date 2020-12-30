@@ -11,16 +11,12 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import cPickle
 import os
 import time
-import mxnet as mx
-import numpy as np
 
-from PIL import Image
+import cPickle
+import mxnet as mx
 from module import MutableModule
-from config.config import config
-from utils import image
 from utils.PrefetchingIter import PrefetchingIter
 
 
@@ -39,6 +35,7 @@ class Predictor(object):
         # [dict(zip(self._mod.output_names, _)) for _ in zip(*self._mod.get_outputs(merge_multi_context=False))]
         return [dict(zip(self._mod.output_names, _)) for _ in zip(*self._mod.get_outputs(merge_multi_context=False))]
 
+
 def pred_eval(predictor, test_data, imdb, vis=False, ignore_cache=None, logger=None):
     """
     wrapper for calculating offline validation for faster data analysis
@@ -53,24 +50,28 @@ def pred_eval(predictor, test_data, imdb, vis=False, ignore_cache=None, logger=N
     """
     res_file = os.path.join(imdb.result_path, imdb.name + '_segmentations.pkl')
     if os.path.exists(res_file) and not ignore_cache:
-        with open(res_file , 'rb') as fid:
+        with open(res_file, 'rb') as fid:
             evaluation_results = cPickle.load(fid)
-        print 'evaluate segmentation: \n'
+        print
+        'evaluate segmentation: \n'
         if logger:
             logger.info('evaluate segmentation: \n')
 
         meanIU = evaluation_results['meanIU']
         IU_array = evaluation_results['IU_array']
-        print 'IU_array:\n'
+        print
+        'IU_array:\n'
         if logger:
             logger.info('IU_array:\n')
         for i in range(len(IU_array)):
-            print '%.5f'%IU_array[i]
+            print
+            '%.5f' % IU_array[i]
             if logger:
-                logger.info('%.5f'%IU_array[i])
-        print 'meanIU:%.5f'%meanIU
+                logger.info('%.5f' % IU_array[i])
+        print
+        'meanIU:%.5f' % meanIU
         if logger:
-            logger.info( 'meanIU:%.5f'%meanIU)
+            logger.info('meanIU:%.5f' % meanIU)
         return
 
     assert vis or not test_data.shuffle
@@ -91,7 +92,7 @@ def pred_eval(predictor, test_data, imdb, vis=False, ignore_cache=None, logger=N
         t2 = time.time() - t
         t = time.time()
 
-        all_segmentation_result[idx: idx+test_data.batch_size] = [output.astype('int8') for output in output_all]
+        all_segmentation_result[idx: idx + test_data.batch_size] = [output.astype('int8') for output in output_all]
 
         idx += test_data.batch_size
         t3 = time.time() - t
@@ -100,9 +101,16 @@ def pred_eval(predictor, test_data, imdb, vis=False, ignore_cache=None, logger=N
         data_time += t1
         net_time += t2
         post_time += t3
-        print 'testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, data_time / idx * test_data.batch_size, net_time / idx * test_data.batch_size, post_time / idx * test_data.batch_size)
+        print
+        'testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images,
+                                                                     data_time / idx * test_data.batch_size,
+                                                                     net_time / idx * test_data.batch_size,
+                                                                     post_time / idx * test_data.batch_size)
         if logger:
-            logger.info('testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, data_time / idx * test_data.batch_size, net_time / idx * test_data.batch_size, post_time / idx * test_data.batch_size))
+            logger.info('testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images,
+                                                                                     data_time / idx * test_data.batch_size,
+                                                                                     net_time / idx * test_data.batch_size,
+                                                                                     post_time / idx * test_data.batch_size))
 
     evaluation_results = imdb.evaluate_segmentations(all_segmentation_result)
 
@@ -110,19 +118,23 @@ def pred_eval(predictor, test_data, imdb, vis=False, ignore_cache=None, logger=N
         with open(res_file, 'wb') as f:
             cPickle.dump(evaluation_results, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
-    print 'evaluate segmentation: \n'
+    print
+    'evaluate segmentation: \n'
     if logger:
         logger.info('evaluate segmentation: \n')
 
     meanIU = evaluation_results['meanIU']
     IU_array = evaluation_results['IU_array']
-    print 'IU_array:\n'
+    print
+    'IU_array:\n'
     if logger:
         logger.info('IU_array:\n')
     for i in range(len(IU_array)):
-        print '%.5f'%IU_array[i]
+        print
+        '%.5f' % IU_array[i]
         if logger:
-            logger.info('%.5f'%IU_array[i])
-    print 'meanIU:%.5f'%meanIU
+            logger.info('%.5f' % IU_array[i])
+    print
+    'meanIU:%.5f' % meanIU
     if logger:
-        logger.info( 'meanIU:%.5f'%meanIU)
+        logger.info('meanIU:%.5f' % meanIU)

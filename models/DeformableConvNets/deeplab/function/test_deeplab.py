@@ -11,25 +11,19 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import argparse
 import pprint
-import logging
-import time
-import os
-import mxnet as mx
 
-from config.config import config, generate_config, update_config
-from config.dataset_conf import dataset
-from config.network_conf import network
-from symbols import *
-from dataset import *
+from config.config import config
 from core.loader import TestDataLoader
 from core.tester import Predictor, pred_eval
+from dataset import *
+from symbols import *
 from utils.load_model import load_param
 
+
 def test_deeplab(network, dataset, image_set, root_path, dataset_path,
-              ctx, prefix, epoch,
-              vis, logger=None, output_path=None):
+                 ctx, prefix, epoch,
+                 vis, logger=None, output_path=None):
     if not logger:
         assert False, 'require a logger'
 
@@ -61,11 +55,13 @@ def test_deeplab(network, dataset, image_set, root_path, dataset_path,
             continue
         assert k in arg_params, k + ' not initialized'
         assert arg_params[k].shape == arg_shape_dict[k], \
-            'shape inconsistent for ' + k + ' inferred ' + str(arg_shape_dict[k]) + ' provided ' + str(arg_params[k].shape)
+            'shape inconsistent for ' + k + ' inferred ' + str(arg_shape_dict[k]) + ' provided ' + str(
+                arg_params[k].shape)
     for k in sym.list_auxiliary_states():
         assert k in aux_params, k + ' not initialized'
         assert aux_params[k].shape == aux_shape_dict[k], \
-            'shape inconsistent for ' + k + ' inferred ' + str(aux_shape_dict[k]) + ' provided ' + str(aux_params[k].shape)
+            'shape inconsistent for ' + k + ' inferred ' + str(aux_shape_dict[k]) + ' provided ' + str(
+                aux_params[k].shape)
 
     # decide maximum shape
     data_names = [k[0] for k in test_data.provide_data_single]
@@ -80,4 +76,3 @@ def test_deeplab(network, dataset, image_set, root_path, dataset_path,
 
     # start detection
     pred_eval(predictor, test_data, imdb, vis=vis, logger=logger)
-

@@ -7,31 +7,28 @@
 
 Adapted from code contributed by BigMoyan.
 """
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import warnings
 
-from keras.layers import Input
+from keras import backend as K
 from keras import layers
-from keras.layers import Dense
+from keras.engine.topology import get_source_inputs
 from keras.layers import Activation
-from keras.layers import Flatten
-from keras.layers import Conv2D
-from keras.layers import MaxPooling2D
 from keras.layers import AveragePooling2D
+from keras.layers import BatchNormalization
+from keras.layers import Conv2D
+from keras.layers import Dense
+from keras.layers import Flatten
 from keras.layers import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
-from keras.layers import BatchNormalization
+from keras.layers import Input
+from keras.layers import MaxPooling2D
 from keras.models import Model
-from keras import backend as K
-from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
-from keras.applications.imagenet_utils import decode_predictions
-from keras.applications.imagenet_utils import preprocess_input
-
 
 WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels.h5'
 WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'

@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
 import re
+
+import keras
 from keras.applications import mobilenetv2
 from keras.utils import get_file
-from ..utils.image import preprocess_image
 
-from . import retinanet
 from . import Backbone
+from . import retinanet
+from ..utils.image import preprocess_image
 
 
 class MobileNetBackbone(Backbone):
@@ -49,8 +50,8 @@ class MobileNetBackbone(Backbone):
         if keras.backend.image_data_format() == 'channels_first':
             raise ValueError('Weights for "channels_last" format '
                              'are not available.')
-	
-	BASE_WEIGHT_PATH = 'https://github.com/JonathanCMitchell/mobilenet_v2_keras/releases/download/v1.1/'
+
+        BASE_WEIGHT_PATH = 'https://github.com/JonathanCMitchell/mobilenet_v2_keras/releases/download/v1.1/'
         model_name = 'mobilenet_v2_weights_tf_dim_ordering_tf_kernels_{}_{}_no_top.h5'.format(alpha, rows)
         weights_url = BASE_WEIGHT_PATH + model_name
         weights_path = get_file(model_name, weights_url, cache_subdir='models')
@@ -63,7 +64,8 @@ class MobileNetBackbone(Backbone):
         backbone = self.backbone.split('_')[0]
 
         if backbone not in MobileNetBackbone.allowed_backbones:
-            raise ValueError('Backbone (\'{}\') not in allowed backbones ({}).'.format(backbone, MobileNetBackbone.allowed_backbones))
+            raise ValueError('Backbone (\'{}\') not in allowed backbones ({}).'.format(backbone,
+                                                                                       MobileNetBackbone.allowed_backbones))
 
     def preprocess_image(self, inputs):
         """ Takes as input an image and prepares it for being passed through the network.

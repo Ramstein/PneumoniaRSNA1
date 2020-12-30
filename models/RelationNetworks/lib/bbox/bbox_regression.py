@@ -34,12 +34,14 @@ def compute_bbox_regression_targets(rois, overlaps, labels, cfg):
 
     # Sanity check
     if len(rois) != len(overlaps):
-        print 'bbox regression: this should not happen'
+        print
+        'bbox regression: this should not happen'
 
     # Indices of ground-truth ROIs
     gt_inds = np.where(overlaps == 1)[0]
     if len(gt_inds) == 0:
-        print 'something wrong : zero ground truth rois'
+        print
+        'something wrong : zero ground truth rois'
     # Indices of examples for which we try to make predictions
     ex_inds = np.where(overlaps >= cfg.TRAIN.BBOX_REGRESSION_THRESH)[0]
     # Get IoU overlap between each ex ROI and gt ROI
@@ -63,7 +65,8 @@ def add_bbox_regression_targets(roidb, cfg):
     :param roidb: roidb to be processed.
     :return: means, std variances of targets
     """
-    print 'add bounding box regression targets'
+    print
+    'add bounding box regression targets'
     assert len(roidb) > 0
     assert 'max_classes' in roidb[0]
 
@@ -88,7 +91,8 @@ def add_bbox_regression_targets(roidb, cfg):
         for im_i in range(num_images):
             targets = roidb[im_i]['bbox_targets']
             for cls in range(1, num_classes):
-                cls_indexes = np.where(targets[:, 0] > 0)[0] if cfg.CLASS_AGNOSTIC else np.where(targets[:, 0] == cls)[0]
+                cls_indexes = np.where(targets[:, 0] > 0)[0] if cfg.CLASS_AGNOSTIC else np.where(targets[:, 0] == cls)[
+                    0]
                 if cls_indexes.size > 0:
                     class_counts[cls] += cls_indexes.size
                     sums[cls, :] += targets[cls_indexes, 1:].sum(axis=0)
@@ -98,13 +102,18 @@ def add_bbox_regression_targets(roidb, cfg):
         # var(x) = E(x^2) - E(x)^2
         stds = np.sqrt(squared_sums / class_counts - means ** 2)
 
-    print 'bbox target means:'
-    print means
-    print means[1:, :].mean(axis=0)  # ignore bg class
-    print 'bbox target stdevs:'
-    print stds
-    print stds[1:, :].mean(axis=0)  # ignore bg class
-
+    print
+    'bbox target means:'
+    print
+    means
+    print
+    means[1:, :].mean(axis=0)  # ignore bg class
+    print
+    'bbox target stdevs:'
+    print
+    stds
+    print
+    stds[1:, :].mean(axis=0)  # ignore bg class
 
     # normalized targets
     for im_i in range(num_images):
@@ -138,4 +147,3 @@ def expand_bbox_regression_targets(bbox_targets_data, num_classes, cfg):
         bbox_targets[index, start:end] = bbox_targets_data[index, 1:]
         bbox_weights[index, start:end] = cfg.TRAIN.BBOX_WEIGHTS
     return bbox_targets, bbox_weights
-

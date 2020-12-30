@@ -7,11 +7,11 @@
 
 import cPickle
 import mxnet as mx
-from utils.symbol import Symbol
-from operator_py.pyramid_proposal import *
-from operator_py.proposal_target import *
-from operator_py.fpn_roi_pooling import *
 from operator_py.box_annotator_ohem import *
+from operator_py.fpn_roi_pooling import *
+from operator_py.proposal_target import *
+from operator_py.pyramid_proposal import *
+from utils.symbol import Symbol
 
 
 class resnet_v1_101_fpn_rcnn(Symbol):
@@ -26,20 +26,28 @@ class resnet_v1_101_fpn_rcnn(Symbol):
             self.shared_param_dict[name + '_bias'] = mx.sym.Variable(name + '_bias')
 
     def get_resnet_backbone(self, data, with_dilated=False, with_dconv=False, with_dpyramid=False, eps=1e-5):
-        conv1 = mx.symbol.Convolution(name='conv1', data=data, num_filter=64, pad=(3, 3), kernel=(7, 7), stride=(2, 2), no_bias=True)
+        conv1 = mx.symbol.Convolution(name='conv1', data=data, num_filter=64, pad=(3, 3), kernel=(7, 7), stride=(2, 2),
+                                      no_bias=True)
         bn_conv1 = mx.symbol.BatchNorm(name='bn_conv1', data=conv1, use_global_stats=True, fix_gamma=False, eps=eps)
         scale_conv1 = bn_conv1
         conv1_relu = mx.symbol.Activation(name='conv1_relu', data=scale_conv1, act_type='relu')
-        pool1 = mx.symbol.Pooling(name='pool1', data=conv1_relu, pooling_convention='full', pad=(0, 0), kernel=(3, 3), stride=(2, 2), pool_type='max')
-        res2a_branch1 = mx.symbol.Convolution(name='res2a_branch1', data=pool1, num_filter=256, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn2a_branch1 = mx.symbol.BatchNorm(name='bn2a_branch1', data=res2a_branch1, use_global_stats=True, fix_gamma=False, eps=eps)
+        pool1 = mx.symbol.Pooling(name='pool1', data=conv1_relu, pooling_convention='full', pad=(0, 0), kernel=(3, 3),
+                                  stride=(2, 2), pool_type='max')
+        res2a_branch1 = mx.symbol.Convolution(name='res2a_branch1', data=pool1, num_filter=256, pad=(0, 0),
+                                              kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn2a_branch1 = mx.symbol.BatchNorm(name='bn2a_branch1', data=res2a_branch1, use_global_stats=True,
+                                           fix_gamma=False, eps=eps)
         scale2a_branch1 = bn2a_branch1
-        res2a_branch2a = mx.symbol.Convolution(name='res2a_branch2a', data=pool1, num_filter=64, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn2a_branch2a = mx.symbol.BatchNorm(name='bn2a_branch2a', data=res2a_branch2a, use_global_stats=True, fix_gamma=False, eps=eps)
+        res2a_branch2a = mx.symbol.Convolution(name='res2a_branch2a', data=pool1, num_filter=64, pad=(0, 0),
+                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn2a_branch2a = mx.symbol.BatchNorm(name='bn2a_branch2a', data=res2a_branch2a, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale2a_branch2a = bn2a_branch2a
         res2a_branch2a_relu = mx.symbol.Activation(name='res2a_branch2a_relu', data=scale2a_branch2a, act_type='relu')
-        res2a_branch2b = mx.symbol.Convolution(name='res2a_branch2b', data=res2a_branch2a_relu, num_filter=64, pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
-        bn2a_branch2b = mx.symbol.BatchNorm(name='bn2a_branch2b', data=res2a_branch2b, use_global_stats=True, fix_gamma=False, eps=eps)
+        res2a_branch2b = mx.symbol.Convolution(name='res2a_branch2b', data=res2a_branch2a_relu, num_filter=64,
+                                               pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
+        bn2a_branch2b = mx.symbol.BatchNorm(name='bn2a_branch2b', data=res2a_branch2b, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale2a_branch2b = bn2a_branch2b
         res2a_branch2b_relu = mx.symbol.Activation(name='res2a_branch2b_relu', data=scale2a_branch2b, act_type='relu')
         res2a_branch2c = mx.symbol.Convolution(name='res2a_branch2c', data=res2a_branch2b_relu, num_filter=256,
@@ -667,13 +675,15 @@ class resnet_v1_101_fpn_rcnn(Symbol):
         if with_dpyramid:
             res4b22_branch2b_offset = mx.symbol.Convolution(name='res4b22_branch2b_offset', data=res4b22_branch2a_relu,
                                                             num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
-            res4b22_branch2b = mx.contrib.symbol.DeformableConvolution(name='res4b22_branch2b', data=res4b22_branch2a_relu,
+            res4b22_branch2b = mx.contrib.symbol.DeformableConvolution(name='res4b22_branch2b',
+                                                                       data=res4b22_branch2a_relu,
                                                                        offset=res4b22_branch2b_offset,
                                                                        num_filter=256, pad=(1, 1), kernel=(3, 3),
                                                                        num_deformable_group=4,
                                                                        stride=(1, 1), no_bias=True)
         else:
-            res4b22_branch2b = mx.symbol.Convolution(name='res4b22_branch2b', data=res4b22_branch2a_relu, num_filter=256,
+            res4b22_branch2b = mx.symbol.Convolution(name='res4b22_branch2b', data=res4b22_branch2a_relu,
+                                                     num_filter=256,
                                                      pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
         bn4b22_branch2b = mx.symbol.BatchNorm(name='bn4b22_branch2b', data=res4b22_branch2b, use_global_stats=True,
                                               fix_gamma=False, eps=eps)
@@ -696,72 +706,106 @@ class resnet_v1_101_fpn_rcnn(Symbol):
             res5_dilate = (1, 1)
 
         # res5a-bottleneck
-        res5a_branch2a = mx.symbol.Convolution(name='res5a_branch2a', data=res4b22_relu, num_filter=512, pad=(0, 0), kernel=(1, 1), stride=res5_stride, no_bias=True)
-        bn5a_branch2a = mx.symbol.BatchNorm(name='bn5a_branch2a', data=res5a_branch2a, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5a_branch2a = mx.symbol.Convolution(name='res5a_branch2a', data=res4b22_relu, num_filter=512, pad=(0, 0),
+                                               kernel=(1, 1), stride=res5_stride, no_bias=True)
+        bn5a_branch2a = mx.symbol.BatchNorm(name='bn5a_branch2a', data=res5a_branch2a, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5a_branch2a = bn5a_branch2a
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
 
         if with_dconv:
-            res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu, num_filter=72, pad=res5_dilate, kernel=(3, 3), dilate=res5_dilate)
-            res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu, offset=res5a_branch2b_offset, num_filter=512,
-                                                                     pad=res5_dilate, kernel=(3, 3), num_deformable_group=4, stride=(1, 1), dilate=res5_dilate, no_bias=True)
+            res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
+                                                          num_filter=72, pad=res5_dilate, kernel=(3, 3),
+                                                          dilate=res5_dilate)
+            res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu,
+                                                                     offset=res5a_branch2b_offset, num_filter=512,
+                                                                     pad=res5_dilate, kernel=(3, 3),
+                                                                     num_deformable_group=4, stride=(1, 1),
+                                                                     dilate=res5_dilate, no_bias=True)
         else:
-            res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512, pad=res5_dilate,
+            res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512,
+                                                   pad=res5_dilate,
                                                    kernel=(3, 3), stride=(1, 1), dilate=res5_dilate, no_bias=True)
 
-        bn5a_branch2b = mx.symbol.BatchNorm(name='bn5a_branch2b', data=res5a_branch2b, use_global_stats=True, fix_gamma=False, eps=eps)
+        bn5a_branch2b = mx.symbol.BatchNorm(name='bn5a_branch2b', data=res5a_branch2b, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5a_branch2b = bn5a_branch2b
         res5a_branch2b_relu = mx.symbol.Activation(name='res5a_branch2b_relu', data=scale5a_branch2b, act_type='relu')
-        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5a_branch2c = mx.symbol.BatchNorm(name='bn5a_branch2c', data=res5a_branch2c, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn5a_branch2c = mx.symbol.BatchNorm(name='bn5a_branch2c', data=res5a_branch2c, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5a_branch2c = bn5a_branch2c
         # res5a-shortcut
-        res5a_branch1 = mx.symbol.Convolution(name='res5a_branch1', data=res4b22_relu, num_filter=2048, pad=(0, 0), kernel=(1, 1), stride=res5_stride, no_bias=True)
-        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5a_branch1 = mx.symbol.Convolution(name='res5a_branch1', data=res4b22_relu, num_filter=2048, pad=(0, 0),
+                                              kernel=(1, 1), stride=res5_stride, no_bias=True)
+        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True,
+                                           fix_gamma=False, eps=eps)
         scale5a_branch1 = bn5a_branch1
         res5a = mx.symbol.broadcast_add(name='res5a', *[scale5a_branch1, scale5a_branch2c])
         res5a_relu = mx.symbol.Activation(name='res5a_relu', data=res5a, act_type='relu')
 
         # res5b-bottleneck
-        res5b_branch2a = mx.symbol.Convolution(name='res5b_branch2a', data=res5a_relu, num_filter=512, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5b_branch2a = mx.symbol.BatchNorm(name='bn5b_branch2a', data=res5b_branch2a, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5b_branch2a = mx.symbol.Convolution(name='res5b_branch2a', data=res5a_relu, num_filter=512, pad=(0, 0),
+                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn5b_branch2a = mx.symbol.BatchNorm(name='bn5b_branch2a', data=res5b_branch2a, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5b_branch2a = bn5b_branch2a
         res5b_branch2a_relu = mx.symbol.Activation(name='res5b_branch2a_relu', data=scale5b_branch2a, act_type='relu')
         if with_dconv:
-            res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu, num_filter=72, pad=res5_dilate, kernel=(3, 3), dilate=res5_dilate)
-            res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu, offset=res5b_branch2b_offset, num_filter=512,
-                                                                     pad=res5_dilate, kernel=(3, 3), num_deformable_group=4, dilate=res5_dilate, no_bias=True)
+            res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu,
+                                                          num_filter=72, pad=res5_dilate, kernel=(3, 3),
+                                                          dilate=res5_dilate)
+            res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu,
+                                                                     offset=res5b_branch2b_offset, num_filter=512,
+                                                                     pad=res5_dilate, kernel=(3, 3),
+                                                                     num_deformable_group=4, dilate=res5_dilate,
+                                                                     no_bias=True)
         else:
-            res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512, pad=res5_dilate,
+            res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512,
+                                                   pad=res5_dilate,
                                                    kernel=(3, 3), stride=(1, 1), dilate=res5_dilate, no_bias=True)
-        bn5b_branch2b = mx.symbol.BatchNorm(name='bn5b_branch2b', data=res5b_branch2b, use_global_stats=True, fix_gamma=False, eps=eps)
+        bn5b_branch2b = mx.symbol.BatchNorm(name='bn5b_branch2b', data=res5b_branch2b, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5b_branch2b = bn5b_branch2b
         res5b_branch2b_relu = mx.symbol.Activation(name='res5b_branch2b_relu', data=scale5b_branch2b, act_type='relu')
-        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5b_branch2c = mx.symbol.BatchNorm(name='bn5b_branch2c', data=res5b_branch2c, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn5b_branch2c = mx.symbol.BatchNorm(name='bn5b_branch2c', data=res5b_branch2c, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5b_branch2c = bn5b_branch2c
         # res5b-shortcut
         res5b = mx.symbol.broadcast_add(name='res5b', *[res5a_relu, scale5b_branch2c])
         res5b_relu = mx.symbol.Activation(name='res5b_relu', data=res5b, act_type='relu')
 
         # res5c-bottleneck
-        res5c_branch2a = mx.symbol.Convolution(name='res5c_branch2a', data=res5b_relu, num_filter=512, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
+        res5c_branch2a = mx.symbol.Convolution(name='res5c_branch2a', data=res5b_relu, num_filter=512, pad=(0, 0),
+                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5c_branch2a = mx.symbol.BatchNorm(name='bn5c_branch2a', data=res5c_branch2a, use_global_stats=True,
                                             fix_gamma=False, eps=eps)
         scale5c_branch2a = bn5c_branch2a
         res5c_branch2a_relu = mx.symbol.Activation(name='res5c_branch2a_relu', data=scale5c_branch2a, act_type='relu')
         if with_dconv:
-            res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu, num_filter=72, pad=res5_dilate, kernel=(3, 3), dilate=res5_dilate)
-            res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu, offset=res5c_branch2b_offset, num_filter=512,
-                                                                     pad=res5_dilate, kernel=(3, 3), num_deformable_group=4, dilate=res5_dilate, no_bias=True)
+            res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu,
+                                                          num_filter=72, pad=res5_dilate, kernel=(3, 3),
+                                                          dilate=res5_dilate)
+            res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu,
+                                                                     offset=res5c_branch2b_offset, num_filter=512,
+                                                                     pad=res5_dilate, kernel=(3, 3),
+                                                                     num_deformable_group=4, dilate=res5_dilate,
+                                                                     no_bias=True)
         else:
-            res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512, pad=res5_dilate,
+            res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512,
+                                                   pad=res5_dilate,
                                                    kernel=(3, 3), stride=(1, 1), dilate=res5_dilate, no_bias=True)
-        bn5c_branch2b = mx.symbol.BatchNorm(name='bn5c_branch2b', data=res5c_branch2b, use_global_stats=True, fix_gamma=False, eps=eps)
+        bn5c_branch2b = mx.symbol.BatchNorm(name='bn5c_branch2b', data=res5c_branch2b, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5c_branch2b = bn5c_branch2b
         res5c_branch2b_relu = mx.symbol.Activation(name='res5c_branch2b_relu', data=scale5c_branch2b, act_type='relu')
-        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048, pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5c_branch2c = mx.symbol.BatchNorm(name='bn5c_branch2c', data=res5c_branch2c, use_global_stats=True, fix_gamma=False, eps=eps)
+        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
+        bn5c_branch2c = mx.symbol.BatchNorm(name='bn5c_branch2c', data=res5c_branch2c, use_global_stats=True,
+                                            fix_gamma=False, eps=eps)
         scale5c_branch2c = bn5c_branch2c
         # res5c-shortcut
         res5c = mx.symbol.broadcast_add(name='res5c', *[res5b_relu, scale5c_branch2c])
@@ -772,10 +816,14 @@ class resnet_v1_101_fpn_rcnn(Symbol):
     def get_fpn_feature(self, c2, c3, c4, c5, feature_dim=256):
 
         # lateral connection
-        fpn_p5_1x1 = mx.symbol.Convolution(data=c5, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim, name='fpn_p5_1x1')
-        fpn_p4_1x1 = mx.symbol.Convolution(data=c4, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim, name='fpn_p4_1x1')
-        fpn_p3_1x1 = mx.symbol.Convolution(data=c3, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim, name='fpn_p3_1x1')
-        fpn_p2_1x1 = mx.symbol.Convolution(data=c2, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim, name='fpn_p2_1x1')
+        fpn_p5_1x1 = mx.symbol.Convolution(data=c5, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim,
+                                           name='fpn_p5_1x1')
+        fpn_p4_1x1 = mx.symbol.Convolution(data=c4, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim,
+                                           name='fpn_p4_1x1')
+        fpn_p3_1x1 = mx.symbol.Convolution(data=c3, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim,
+                                           name='fpn_p3_1x1')
+        fpn_p2_1x1 = mx.symbol.Convolution(data=c2, kernel=(1, 1), pad=(0, 0), stride=(1, 1), num_filter=feature_dim,
+                                           name='fpn_p2_1x1')
         # top-down connection
         fpn_p5_upsample = mx.symbol.UpSampling(fpn_p5_1x1, scale=2, sample_type='nearest', name='fpn_p5_upsample')
         fpn_p4_plus = mx.sym.ElementWiseSum(*[fpn_p5_upsample, fpn_p4_1x1], name='fpn_p4_sum')
@@ -784,28 +832,39 @@ class resnet_v1_101_fpn_rcnn(Symbol):
         fpn_p3_upsample = mx.symbol.UpSampling(fpn_p3_plus, scale=2, sample_type='nearest', name='fpn_p3_upsample')
         fpn_p2_plus = mx.sym.ElementWiseSum(*[fpn_p3_upsample, fpn_p2_1x1], name='fpn_p2_sum')
         # FPN feature
-        fpn_p6 = mx.sym.Convolution(data=c5, kernel=(3, 3), pad=(1, 1), stride=(2, 2), num_filter=feature_dim, name='fpn_p6')
-        fpn_p5 = mx.symbol.Convolution(data=fpn_p5_1x1, kernel=(3, 3), pad=(1, 1), stride=(1, 1), num_filter=feature_dim, name='fpn_p5')
-        fpn_p4 = mx.symbol.Convolution(data=fpn_p4_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1), num_filter=feature_dim, name='fpn_p4')
-        fpn_p3 = mx.symbol.Convolution(data=fpn_p3_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1), num_filter=feature_dim, name='fpn_p3')
-        fpn_p2 = mx.symbol.Convolution(data=fpn_p2_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1), num_filter=feature_dim, name='fpn_p2')
+        fpn_p6 = mx.sym.Convolution(data=c5, kernel=(3, 3), pad=(1, 1), stride=(2, 2), num_filter=feature_dim,
+                                    name='fpn_p6')
+        fpn_p5 = mx.symbol.Convolution(data=fpn_p5_1x1, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
+                                       num_filter=feature_dim, name='fpn_p5')
+        fpn_p4 = mx.symbol.Convolution(data=fpn_p4_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
+                                       num_filter=feature_dim, name='fpn_p4')
+        fpn_p3 = mx.symbol.Convolution(data=fpn_p3_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
+                                       num_filter=feature_dim, name='fpn_p3')
+        fpn_p2 = mx.symbol.Convolution(data=fpn_p2_plus, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
+                                       num_filter=feature_dim, name='fpn_p2')
 
         return fpn_p2, fpn_p3, fpn_p4, fpn_p5, fpn_p6
 
     def get_rpn_subnet(self, data, num_anchors, suffix):
         rpn_conv = mx.sym.Convolution(data=data, kernel=(3, 3), pad=(1, 1), num_filter=512, name='rpn_conv_' + suffix,
-                                      weight=self.shared_param_dict['rpn_conv_weight'], bias=self.shared_param_dict['rpn_conv_bias'])
+                                      weight=self.shared_param_dict['rpn_conv_weight'],
+                                      bias=self.shared_param_dict['rpn_conv_bias'])
         rpn_relu = mx.sym.Activation(data=rpn_conv, act_type='relu', name='rpn_relu_' + suffix)
-        rpn_cls_score = mx.sym.Convolution(data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors, name='rpn_cls_score_' + suffix,
-                                           weight=self.shared_param_dict['rpn_cls_score_weight'], bias=self.shared_param_dict['rpn_cls_score_bias'])
-        rpn_bbox_pred = mx.sym.Convolution(data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name='rpn_bbox_pred_' + suffix,
-                                           weight=self.shared_param_dict['rpn_bbox_pred_weight'], bias=self.shared_param_dict['rpn_bbox_pred_bias'])
+        rpn_cls_score = mx.sym.Convolution(data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors,
+                                           name='rpn_cls_score_' + suffix,
+                                           weight=self.shared_param_dict['rpn_cls_score_weight'],
+                                           bias=self.shared_param_dict['rpn_cls_score_bias'])
+        rpn_bbox_pred = mx.sym.Convolution(data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors,
+                                           name='rpn_bbox_pred_' + suffix,
+                                           weight=self.shared_param_dict['rpn_bbox_pred_weight'],
+                                           bias=self.shared_param_dict['rpn_bbox_pred_bias'])
 
         # n x (2*A) x H x W => n x 2 x (A*H*W)
         rpn_cls_score_t1 = mx.sym.Reshape(data=rpn_cls_score, shape=(0, 2, -1, 0), name='rpn_cls_score_t1_' + suffix)
         rpn_cls_score_t2 = mx.sym.Reshape(data=rpn_cls_score_t1, shape=(0, 2, -1), name='rpn_cls_score_t2_' + suffix)
         rpn_cls_prob = mx.sym.SoftmaxActivation(data=rpn_cls_score_t1, mode='channel', name='rpn_cls_prob_' + suffix)
-        rpn_cls_prob_t = mx.sym.Reshape(data=rpn_cls_prob, shape=(0, 2 * num_anchors, -1, 0), name='rpn_cls_prob_t_' + suffix)
+        rpn_cls_prob_t = mx.sym.Reshape(data=rpn_cls_prob, shape=(0, 2 * num_anchors, -1, 0),
+                                        name='rpn_cls_prob_t_' + suffix)
         rpn_bbox_pred_t = mx.sym.Reshape(data=rpn_bbox_pred, shape=(0, 0, -1), name='rpn_bbox_pred_t_' + suffix)
         return rpn_cls_score_t2, rpn_cls_prob_t, rpn_bbox_pred_t, rpn_bbox_pred
 
@@ -822,11 +881,21 @@ class resnet_v1_101_fpn_rcnn(Symbol):
         res2, res3, res4, res5 = self.get_resnet_backbone(data)
         fpn_p2, fpn_p3, fpn_p4, fpn_p5, fpn_p6 = self.get_fpn_feature(res2, res3, res4, res5)
 
-        rpn_cls_score_p2, rpn_prob_p2, rpn_bbox_loss_p2, rpn_bbox_pred_p2 = self.get_rpn_subnet(fpn_p2, cfg.network.NUM_ANCHORS, 'p2')
-        rpn_cls_score_p3, rpn_prob_p3, rpn_bbox_loss_p3, rpn_bbox_pred_p3 = self.get_rpn_subnet(fpn_p3, cfg.network.NUM_ANCHORS, 'p3')
-        rpn_cls_score_p4, rpn_prob_p4, rpn_bbox_loss_p4, rpn_bbox_pred_p4 = self.get_rpn_subnet(fpn_p4, cfg.network.NUM_ANCHORS, 'p4')
-        rpn_cls_score_p5, rpn_prob_p5, rpn_bbox_loss_p5, rpn_bbox_pred_p5 = self.get_rpn_subnet(fpn_p5, cfg.network.NUM_ANCHORS, 'p5')
-        rpn_cls_score_p6, rpn_prob_p6, rpn_bbox_loss_p6, rpn_bbox_pred_p6 = self.get_rpn_subnet(fpn_p6, cfg.network.NUM_ANCHORS, 'p6')
+        rpn_cls_score_p2, rpn_prob_p2, rpn_bbox_loss_p2, rpn_bbox_pred_p2 = self.get_rpn_subnet(fpn_p2,
+                                                                                                cfg.network.NUM_ANCHORS,
+                                                                                                'p2')
+        rpn_cls_score_p3, rpn_prob_p3, rpn_bbox_loss_p3, rpn_bbox_pred_p3 = self.get_rpn_subnet(fpn_p3,
+                                                                                                cfg.network.NUM_ANCHORS,
+                                                                                                'p3')
+        rpn_cls_score_p4, rpn_prob_p4, rpn_bbox_loss_p4, rpn_bbox_pred_p4 = self.get_rpn_subnet(fpn_p4,
+                                                                                                cfg.network.NUM_ANCHORS,
+                                                                                                'p4')
+        rpn_cls_score_p5, rpn_prob_p5, rpn_bbox_loss_p5, rpn_bbox_pred_p5 = self.get_rpn_subnet(fpn_p5,
+                                                                                                cfg.network.NUM_ANCHORS,
+                                                                                                'p5')
+        rpn_cls_score_p6, rpn_prob_p6, rpn_bbox_loss_p6, rpn_bbox_pred_p6 = self.get_rpn_subnet(fpn_p6,
+                                                                                                cfg.network.NUM_ANCHORS,
+                                                                                                'p6')
 
         rpn_cls_prob_dict = {
             'rpn_cls_prob_stride64': rpn_prob_p6,
@@ -850,14 +919,19 @@ class resnet_v1_101_fpn_rcnn(Symbol):
             rpn_bbox_weight = mx.sym.Variable(name='bbox_weight')
             gt_boxes = mx.sym.Variable(name="gt_boxes")
 
-            rpn_cls_score = mx.sym.Concat(rpn_cls_score_p2, rpn_cls_score_p3, rpn_cls_score_p4, rpn_cls_score_p5, rpn_cls_score_p6, dim=2)
-            rpn_bbox_loss = mx.sym.Concat(rpn_bbox_loss_p2, rpn_bbox_loss_p3, rpn_bbox_loss_p4, rpn_bbox_loss_p5, rpn_bbox_loss_p6, dim=2)
+            rpn_cls_score = mx.sym.Concat(rpn_cls_score_p2, rpn_cls_score_p3, rpn_cls_score_p4, rpn_cls_score_p5,
+                                          rpn_cls_score_p6, dim=2)
+            rpn_bbox_loss = mx.sym.Concat(rpn_bbox_loss_p2, rpn_bbox_loss_p3, rpn_bbox_loss_p4, rpn_bbox_loss_p5,
+                                          rpn_bbox_loss_p6, dim=2)
             # RPN classification loss
-            rpn_cls_output = mx.sym.SoftmaxOutput(data=rpn_cls_score, label=rpn_label, multi_output=True, normalization='valid',
+            rpn_cls_output = mx.sym.SoftmaxOutput(data=rpn_cls_score, label=rpn_label, multi_output=True,
+                                                  normalization='valid',
                                                   use_ignore=True, ignore_label=-1, name='rpn_cls_prob')
             # bounding box regression
-            rpn_bbox_loss = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_l1', scalar=3.0, data=(rpn_bbox_loss - rpn_bbox_target))
-            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss, grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
+            rpn_bbox_loss = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_l1', scalar=3.0,
+                                                               data=(rpn_bbox_loss - rpn_bbox_target))
+            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss,
+                                            grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
 
             aux_dict = {
                 'op_type': 'pyramid_proposal', 'name': 'rois',
@@ -872,8 +946,10 @@ class resnet_v1_101_fpn_rcnn(Symbol):
             # ROI proposal target
             gt_boxes_reshape = mx.sym.Reshape(data=gt_boxes, shape=(-1, 5), name='gt_boxes_reshape')
             rois, label, bbox_target, bbox_weight \
-                = mx.sym.Custom(rois=rois, gt_boxes=gt_boxes_reshape, op_type='proposal_target', num_classes=num_reg_classes, batch_images=cfg.TRAIN.BATCH_IMAGES,
-                                batch_rois=cfg.TRAIN.BATCH_ROIS, cfg=cPickle.dumps(cfg), fg_fraction=cfg.TRAIN.FG_FRACTION)
+                = mx.sym.Custom(rois=rois, gt_boxes=gt_boxes_reshape, op_type='proposal_target',
+                                num_classes=num_reg_classes, batch_images=cfg.TRAIN.BATCH_IMAGES,
+                                batch_rois=cfg.TRAIN.BATCH_ROIS, cfg=cPickle.dumps(cfg),
+                                fg_fraction=cfg.TRAIN.FG_FRACTION)
         else:
             aux_dict = {
                 'op_type': 'pyramid_proposal', 'name': 'rois',
@@ -902,29 +978,38 @@ class resnet_v1_101_fpn_rcnn(Symbol):
         if is_train:
             if cfg.TRAIN.ENABLE_OHEM:
                 labels_ohem, bbox_weights_ohem = mx.sym.Custom(op_type='BoxAnnotatorOHEM', num_classes=num_classes,
-                                                               num_reg_classes=num_reg_classes, roi_per_img=cfg.TRAIN.BATCH_ROIS_OHEM,
+                                                               num_reg_classes=num_reg_classes,
+                                                               roi_per_img=cfg.TRAIN.BATCH_ROIS_OHEM,
                                                                cls_score=cls_score, bbox_pred=bbox_pred, labels=label,
                                                                bbox_targets=bbox_target, bbox_weights=bbox_weight)
-                cls_prob = mx.sym.SoftmaxOutput(name='cls_prob', data=cls_score, label=labels_ohem, normalization='valid', use_ignore=True, ignore_label=-1)
-                bbox_loss_ = bbox_weights_ohem * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0, data=(bbox_pred - bbox_target))
-                bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_, grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS_OHEM)
+                cls_prob = mx.sym.SoftmaxOutput(name='cls_prob', data=cls_score, label=labels_ohem,
+                                                normalization='valid', use_ignore=True, ignore_label=-1)
+                bbox_loss_ = bbox_weights_ohem * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0,
+                                                                  data=(bbox_pred - bbox_target))
+                bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_,
+                                            grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS_OHEM)
                 rcnn_label = labels_ohem
             else:
                 cls_prob = mx.sym.SoftmaxOutput(name='cls_prob', data=cls_score, label=label, normalization='valid')
-                bbox_loss_ = bbox_weight * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0, data=(bbox_pred - bbox_target))
+                bbox_loss_ = bbox_weight * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0,
+                                                            data=(bbox_pred - bbox_target))
                 bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_, grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS)
                 rcnn_label = label
 
             # reshape output
             rcnn_label = mx.sym.Reshape(data=rcnn_label, shape=(cfg.TRAIN.BATCH_IMAGES, -1), name='label_reshape')
-            cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TRAIN.BATCH_IMAGES, -1, num_classes), name='cls_prob_reshape')
-            bbox_loss = mx.sym.Reshape(data=bbox_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1, 4 * num_reg_classes), name='bbox_loss_reshape')
+            cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TRAIN.BATCH_IMAGES, -1, num_classes),
+                                      name='cls_prob_reshape')
+            bbox_loss = mx.sym.Reshape(data=bbox_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1, 4 * num_reg_classes),
+                                       name='bbox_loss_reshape')
             # group = mx.sym.Group([rpn_cls_output, rpn_bbox_loss, mx.sym.BlockGrad(cls_prob), mx.sym.BlockGrad(bbox_loss), mx.sym.BlockGrad(rcnn_label)])
             group = mx.sym.Group([rpn_cls_output, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label)])
         else:
             cls_prob = mx.sym.SoftmaxActivation(name='cls_prob', data=cls_score)
-            cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes), name='cls_prob_reshape')
-            bbox_pred = mx.sym.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes), name='bbox_pred_reshape')
+            cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),
+                                      name='cls_prob_reshape')
+            bbox_pred = mx.sym.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
+                                       name='bbox_pred_reshape')
             group = mx.sym.Group([rois, cls_prob, bbox_pred])
 
         self.sym = group

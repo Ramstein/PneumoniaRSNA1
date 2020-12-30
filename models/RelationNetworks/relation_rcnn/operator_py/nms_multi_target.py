@@ -38,18 +38,18 @@ class NmsMultiTargetOp(mx.operator.CustomOp):
 
         output_list = []
         for cls_idx in range(0, num_fg_classes):
-            valid_gt_mask = (gt_box[0, :, -1].astype(np.int32)==(cls_idx+1))
+            valid_gt_mask = (gt_box[0, :, -1].astype(np.int32) == (cls_idx + 1))
             valid_gt_box = gt_box[0, valid_gt_mask, :]
             num_valid_gt = len(valid_gt_box)
 
             if num_valid_gt == 0:
-               output = np.zeros(shape=(num_boxes, self._num_thresh), dtype=np.float32)
-               output_list.append(output)
+                output = np.zeros(shape=(num_boxes, self._num_thresh), dtype=np.float32)
+                output_list.append(output)
             else:
                 bbox_per_class = bbox[:, cls_idx, :]
-                score_per_class = score[:, cls_idx:cls_idx+1]
+                score_per_class = score[:, cls_idx:cls_idx + 1]
                 overlap_mat = bbox_overlaps(bbox_per_class.astype(np.float),
-                                            valid_gt_box[:,:-1].astype(np.float))
+                                            valid_gt_box[:, :-1].astype(np.float))
 
                 eye_matrix = np.eye(num_valid_gt)
                 output_list_per_class = []
@@ -66,7 +66,7 @@ class NmsMultiTargetOp(mx.operator.CustomOp):
                     overlap_score *= max_overlap_mask
                     max_score_indices = np.argmax(overlap_score, axis=0)
                     output = np.zeros((num_boxes,))
-                    output[np.intersect1d(max_score_indices,valid_bbox_indices)] = 1
+                    output[np.intersect1d(max_score_indices, valid_bbox_indices)] = 1
                     output_list_per_class.append(output)
                 output_per_class = np.stack(output_list_per_class, axis=-1)
                 output_list.append(output_per_class)

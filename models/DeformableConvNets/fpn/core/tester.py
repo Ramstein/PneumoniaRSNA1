@@ -11,16 +11,16 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import cPickle
 import os
 import time
+
+import cPickle
 import mxnet as mx
 import numpy as np
-
-from module import MutableModule
-from utils import image
 from bbox.bbox_transform import bbox_pred, clip_boxes
+from module import MutableModule
 from nms.nms import py_nms_wrapper, py_softnms_wrapper
+from utils import image
 from utils.PrefetchingIter import PrefetchingIter
 
 
@@ -101,7 +101,8 @@ def detect_at_single_scale(predictor, data_names, imdb, test_data, cfg, thresh, 
         net_time += t2
         post_time += t3
 
-        print 'testing {}/{} with scale {}: data {:.4f}s net {:.4f}s post {:.4f}s' \
+        print
+        'testing {}/{} with scale {}: data {:.4f}s net {:.4f}s post {:.4f}s' \
             .format(idx, imdb.num_images, cfg.SCALES, data_time / idx * test_data.batch_size,
                     net_time / idx * test_data.batch_size, post_time / idx * test_data.batch_size)
         if logger:
@@ -142,7 +143,8 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
     num_images = imdb.num_images
 
     for test_scale_index, test_scale in enumerate(cfg.TEST_SCALES):
-        det_file_single_scale = os.path.join(imdb.result_path, imdb.name + '_detections_' + str(test_scale_index) + '.pkl')
+        det_file_single_scale = os.path.join(imdb.result_path,
+                                             imdb.name + '_detections_' + str(test_scale_index) + '.pkl')
         # if os.path.exists(det_file_single_scale):
         #    continue
         cfg.SCALES = [test_scale]
@@ -165,7 +167,8 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
     all_boxes = [[[] for _ in range(num_images)] for _ in range(imdb.num_classes)]
 
     for test_scale_index, test_scale in enumerate(cfg.TEST_SCALES):
-        det_file_single_scale = os.path.join(imdb.result_path, imdb.name + '_detections_' + str(test_scale_index) + '.pkl')
+        det_file_single_scale = os.path.join(imdb.result_path,
+                                             imdb.name + '_detections_' + str(test_scale_index) + '.pkl')
         if os.path.exists(det_file_single_scale):
             with open(det_file_single_scale, 'rb') as fid:
                 all_boxes_single_scale = cPickle.load(fid)
@@ -174,7 +177,8 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
                     if len(all_boxes[idx_class][idx_im]) == 0:
                         all_boxes[idx_class][idx_im] = all_boxes_single_scale[idx_class][idx_im]
                     else:
-                        all_boxes[idx_class][idx_im] = np.vstack((all_boxes[idx_class][idx_im], all_boxes_single_scale[idx_class][idx_im]))
+                        all_boxes[idx_class][idx_im] = np.vstack(
+                            (all_boxes[idx_class][idx_im], all_boxes_single_scale[idx_class][idx_im]))
 
     for idx_class in range(1, imdb.num_classes):
         for idx_im in range(0, num_images):

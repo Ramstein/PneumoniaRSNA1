@@ -11,8 +11,8 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import yaml
 import numpy as np
+import yaml
 from easydict import EasyDict as edict
 
 config = edict()
@@ -76,6 +76,7 @@ config.TEST.BATCH_IMAGES = 1
 
 # Test Model Epoch
 config.TEST.test_epoch = 0
+
 
 def update_config(config_file):
     exp_config = None

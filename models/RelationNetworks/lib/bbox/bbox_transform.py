@@ -59,6 +59,7 @@ def clip_boxes(boxes, im_shape):
     boxes[:, 3::4] = np.maximum(np.minimum(boxes[:, 3::4], im_shape[0] - 1), 0)
     return boxes
 
+
 def filter_boxes(boxes, min_size):
     """
     filter small boxes.
@@ -70,6 +71,7 @@ def filter_boxes(boxes, min_size):
     hs = boxes[:, 3] - boxes[:, 1] + 1
     keep = np.where((ws >= min_size) & (hs >= min_size))[0]
     return keep
+
 
 def nonlinear_transform(ex_rois, gt_rois):
     """

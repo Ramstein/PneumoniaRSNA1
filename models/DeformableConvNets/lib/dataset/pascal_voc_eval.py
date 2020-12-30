@@ -8,9 +8,10 @@
 given a pascal voc imdb, compute mAP
 """
 
-import numpy as np
 import os
+
 import cPickle
+import numpy as np
 from mask.mask_transform import mask_overlap
 
 
@@ -92,8 +93,10 @@ def voc_eval(detpath, annopath, imageset_file, classname, annocache, ovthresh=0.
         for ind, image_filename in enumerate(image_filenames):
             recs[image_filename] = parse_voc_rec(annopath.format(image_filename))
             if ind % 100 == 0:
-                print 'reading annotations for {:d}/{:d}'.format(ind + 1, len(image_filenames))
-        print 'saving annotations cache to {:s}'.format(annocache)
+                print
+                'reading annotations for {:d}/{:d}'.format(ind + 1, len(image_filenames))
+        print
+        'saving annotations cache to {:s}'.format(annocache)
         with open(annocache, 'wb') as f:
             cPickle.dump(recs, f, protocol=cPickle.HIGHEST_PROTOCOL)
     else:
@@ -232,7 +235,8 @@ def voc_eval_sds(det_file, seg_file, devkit_path, image_list, cls_name, cache_di
     for i in xrange(num_pred):
         pred_box = np.round(new_boxes[i, :4]).astype(int)
         pred_mask = new_masks[i]
-        pred_mask = cv2.resize(pred_mask.astype(np.float32), (pred_box[2] - pred_box[0] + 1, pred_box[3] - pred_box[1] + 1))
+        pred_mask = cv2.resize(pred_mask.astype(np.float32),
+                               (pred_box[2] - pred_box[0] + 1, pred_box[3] - pred_box[1] + 1))
         pred_mask = pred_mask >= binary_thresh
         image_index = new_image[keep_inds[i]]
 
@@ -267,7 +271,7 @@ def voc_eval_sds(det_file, seg_file, devkit_path, image_list, cls_name, cache_di
     tp = np.cumsum(tp)
     rec = tp / float(num_pos)
     # avoid divide by zero in case the first matches a difficult gt
-    prec = tp / np.maximum(fp+tp, np.finfo(np.float64).eps)
+    prec = tp / np.maximum(fp + tp, np.finfo(np.float64).eps)
     ap = voc_ap(rec, prec, True)
     return ap
 
@@ -302,9 +306,9 @@ def parse_inst(image_name, devkit_path):
         mask_bound[1] = np.min(r)
         mask_bound[2] = np.max(c)
         mask_bound[3] = np.max(r)
-        mask = seg_obj_data[mask_bound[1]:mask_bound[3]+1, mask_bound[0]:mask_bound[2]+1]
+        mask = seg_obj_data[mask_bound[1]:mask_bound[3] + 1, mask_bound[0]:mask_bound[2] + 1]
         mask = (mask == unique_inst[inst_ind])
-        mask_cls = seg_cls_data[mask_bound[1]:mask_bound[3]+1, mask_bound[0]:mask_bound[2]+1]
+        mask_cls = seg_cls_data[mask_bound[1]:mask_bound[3] + 1, mask_bound[0]:mask_bound[2] + 1]
         mask_cls = mask_cls[mask]
         num_cls = np.unique(mask_cls)
         assert num_cls.shape[0] == 1
@@ -352,9 +356,11 @@ def check_voc_sds_cache(cache_dir, devkit_path, image_names, class_names):
                     record_list[cls][image_name] = []
                 record_list[cls][image_name].append(mask_dic)
             if i % 100 == 0:
-                print 'Reading annotation for {:d}/{:d}'.format(i + 1, len(image_names))
+                print
+                'Reading annotation for {:d}/{:d}'.format(i + 1, len(image_names))
 
-        print 'Saving cached annotations...'
+        print
+        'Saving cached annotations...'
         for cls_ind, name in enumerate(class_names):
             if name == '__background__':
                 continue

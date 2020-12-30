@@ -15,9 +15,10 @@ limitations under the License.
 """
 
 import warnings
-import pytest
-import numpy as np
+
 import keras
+import numpy as np
+import pytest
 from keras_retinanet import losses
 from keras_retinanet.models.densenet import DenseNetBackbone
 

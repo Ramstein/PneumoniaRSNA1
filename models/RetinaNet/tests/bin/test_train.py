@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras_retinanet.bin.train
-import keras.backend
-
 import warnings
 
+import keras.backend
+import keras_retinanet.bin.train
 import pytest
 
 

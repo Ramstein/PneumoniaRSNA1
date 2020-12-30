@@ -11,15 +11,15 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import numpy as np
-import mxnet as mx
-from mxnet.executor_manager import _split_input_slice
-
-from config.config import config
-from utils.image import tensor_vstack
-from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor
-from rcnn import get_rcnn_testbatch, get_rcnn_batch
 import threading
+
+import mxnet as mx
+import numpy as np
+from config.config import config
+from mxnet.executor_manager import _split_input_slice
+from rcnn import get_rcnn_testbatch, get_rcnn_batch
+from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor
+from utils.image import tensor_vstack
 
 
 class TestLoader(mx.io.DataIter):
@@ -70,6 +70,7 @@ class TestLoader(mx.io.DataIter):
         shape = [[(k, v.shape) for k, v in zip(self.data_name, data[i])] for i in xrange(len(data))]
         self.lock_data.release()
         return shape
+
     provide_data = property(provide_data_func)
 
     def provide_label_func(self, data=None):
@@ -79,6 +80,7 @@ class TestLoader(mx.io.DataIter):
         shape = [None for _ in range(len(data))]
         self.lock_data.release()
         return shape
+
     provide_label = property(provide_label_func)
 
     def provide_data_single_func(self, data=None):
@@ -88,6 +90,7 @@ class TestLoader(mx.io.DataIter):
         shape = [(k, v.shape) for k, v in zip(self.data_name, data[0])]
         self.lock_data.release()
         return shape
+
     provide_data_single = property(provide_data_single_func)
 
     def provide_label_single_func(self, data=None):
@@ -95,6 +98,7 @@ class TestLoader(mx.io.DataIter):
         shape = None
         self.lock_data.release()
         return shape
+
     provide_label_single = property(provide_label_single_func)
 
     def reset(self):
@@ -113,8 +117,9 @@ class TestLoader(mx.io.DataIter):
             self.lock.release()
             data, im_info = self.get_batch(cur_from)
             return im_info, mx.io.DataBatch(data=data, label=self.label,
-                   pad=self.getpad(cur_from), index=self.getindex(cur_from),
-                   provide_data=self.provide_data_func(data), provide_label=self.provide_label_func(data))
+                                            pad=self.getpad(cur_from), index=self.getindex(cur_from),
+                                            provide_data=self.provide_data_func(data),
+                                            provide_label=self.provide_label_func(data))
         else:
             self.lock.release()
             raise StopIteration
@@ -168,7 +173,8 @@ class TestLoader(mx.io.DataIter):
 
 
 class ROIIter(mx.io.DataIter):
-    def __init__(self, roidb, config, batch_size=2, shuffle=False, ctx=None, work_load_list=None, aspect_grouping=False):
+    def __init__(self, roidb, config, batch_size=2, shuffle=False, ctx=None, work_load_list=None,
+                 aspect_grouping=False):
         """
         This Iter will provide roi data to Fast R-CNN network
         :param roidb: must be preprocessed
@@ -231,6 +237,7 @@ class ROIIter(mx.io.DataIter):
         shape = [[(k, v.shape) for k, v in zip(self.data_name, data[i])] for i in xrange(len(data))]
         self.lock_data.release()
         return shape
+
     provide_data = property(provide_data_func)
 
     def provide_label_func(self, label=None):
@@ -240,6 +247,7 @@ class ROIIter(mx.io.DataIter):
         shape = [[(k, v.shape) for k, v in zip(self.label_name, label[i])] for i in xrange(len(label))]
         self.lock_data.release()
         return shape
+
     provide_label = property(provide_label_func)
 
     def provide_data_single_func(self, data=None):
@@ -249,6 +257,7 @@ class ROIIter(mx.io.DataIter):
         shape = [(k, v.shape) for k, v in zip(self.data_name, data[0])]
         self.lock_data.release()
         return shape
+
     provide_data_single = property(provide_data_single_func)
 
     def provide_label_single_func(self, label=None):
@@ -258,6 +267,7 @@ class ROIIter(mx.io.DataIter):
         shape = [(k, v.shape) for k, v in zip(self.label_name, label[0])]
         self.lock_data.release()
         return shape
+
     provide_label_single = property(provide_label_single_func)
 
     def reset(self):
@@ -290,8 +300,9 @@ class ROIIter(mx.io.DataIter):
             self.lock.release()
             data, label = self.get_batch_individual(cur_from)
             return mx.io.DataBatch(data=data, label=label,
-               pad=self.getpad(cur_from), index=self.getindex(cur_from),
-               provide_data=self.provide_data_func(data), provide_label=self.provide_label_func(label))
+                                   pad=self.getpad(cur_from), index=self.getindex(cur_from),
+                                   provide_data=self.provide_data_func(data),
+                                   provide_label=self.provide_label_func(label))
         else:
             self.lock.release()
             raise StopIteration
@@ -344,7 +355,7 @@ class ROIIter(mx.io.DataIter):
 
         data = [mx.nd.array(all_data[name]) for name in self.data_name]
         label = [mx.nd.array(all_label[name]) for name in self.label_name]
-        
+
         self.lock_data.acquire()
         self.data = data
         self.label = label
@@ -384,7 +395,7 @@ class ROIIter(mx.io.DataIter):
 
         return data, label
 
-    #def parfetch(self, iroidb):
+    # def parfetch(self, iroidb):
     #    data, label = get_rcnn_batch(iroidb, self.cfg)
     #    return {'data': data, 'label': label}
 
@@ -464,6 +475,7 @@ class AnchorLoader(mx.io.DataIter):
         shape = [[(k, v.shape) for k, v in zip(self.data_name, data[i])] for i in xrange(len(data))]
         self.lock_data.release()
         return shape
+
     provide_data = property(provide_data_func)
 
     def provide_label_func(self, label=None):
@@ -473,6 +485,7 @@ class AnchorLoader(mx.io.DataIter):
         shape = [[(k, v.shape) for k, v in zip(self.label_name, label[i])] for i in xrange(len(label))]
         self.lock_data.release()
         return shape
+
     provide_label = property(provide_label_func)
 
     def provide_data_single_func(self, data=None):
@@ -482,6 +495,7 @@ class AnchorLoader(mx.io.DataIter):
         shape = [(k, v.shape) for k, v in zip(self.data_name, data[0])]
         self.lock_data.release()
         return shape
+
     provide_data_single = property(provide_data_single_func)
 
     def provide_label_single_func(self, label=None):
@@ -491,6 +505,7 @@ class AnchorLoader(mx.io.DataIter):
         shape = [(k, v.shape) for k, v in zip(self.label_name, label[0])]
         self.lock_data.release()
         return shape
+
     provide_label_single = property(provide_label_single_func)
 
     def reset(self):
@@ -523,8 +538,9 @@ class AnchorLoader(mx.io.DataIter):
             self.lock.release()
             data, label = self.get_batch_individual(cur_from)
             return mx.io.DataBatch(data=data, label=label,
-               pad=self.getpad(cur_from), index=self.getindex(cur_from),
-               provide_data=self.provide_data_func(data), provide_label=self.provide_label_func(label))
+                                   pad=self.getpad(cur_from), index=self.getindex(cur_from),
+                                   provide_data=self.provide_data_func(data),
+                                   provide_label=self.provide_label_func(label))
         else:
             self.lock.release()
             raise StopIteration
@@ -603,5 +619,3 @@ class AnchorLoader(mx.io.DataIter):
                               self.feat_stride, self.anchor_scales,
                               self.anchor_ratios, self.allowed_border)
         return {'data': data, 'label': label}
-
-

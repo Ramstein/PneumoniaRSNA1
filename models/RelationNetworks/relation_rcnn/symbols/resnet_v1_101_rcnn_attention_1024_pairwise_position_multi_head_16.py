@@ -5,13 +5,13 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 
+import math
+
 import cPickle
 import mxnet as mx
-import math
-from utils.symbol import Symbol
+from operator_py.box_annotator_ohem import *
 from operator_py.proposal import *
 from operator_py.proposal_target import *
-from operator_py.box_annotator_ohem import *
 from resnet_v1_101_rcnn_base import resnet_v1_101_rcnn_base
 
 
@@ -23,7 +23,7 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
         self.eps = 1e-5
         self.use_global_stats = True
         self.workspace = 512
-        self.units = (3, 4, 23, 3) # use for 101
+        self.units = (3, 4, 23, 3)  # use for 101
         self.filter_list = [256, 512, 1024, 2048]
 
     @staticmethod
@@ -184,12 +184,15 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
 
             # classification
             rpn_cls_prob = mx.sym.SoftmaxOutput(data=rpn_cls_score_reshape, label=rpn_label, multi_output=True,
-                                                   normalization='valid', use_ignore=True, ignore_label=-1, name="rpn_cls_prob")
+                                                normalization='valid', use_ignore=True, ignore_label=-1,
+                                                name="rpn_cls_prob")
 
             # bounding box regression
-            rpn_bbox_loss_ = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_', scalar=3.0, data=(rpn_bbox_pred - rpn_bbox_target))
+            rpn_bbox_loss_ = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_', scalar=3.0,
+                                                                data=(rpn_bbox_pred - rpn_bbox_target))
 
-            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss_, grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
+            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss_,
+                                            grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
 
             # ROI proposal
             rpn_cls_act = mx.sym.SoftmaxActivation(
@@ -245,7 +248,7 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
 
         nongt_dim = cfg.TRAIN.RPN_POST_NMS_TOP_N if is_train else cfg.TEST.RPN_POST_NMS_TOP_N
         # fc_position = mx.symbol.FullyConnected(name='fc_position', data=position_feat, num_hidden=1024)
-        #fc_position_relu =  mx.sym.Activation(data=fc_position, act_type='relu', name='fc_position_relu')
+        # fc_position_relu =  mx.sym.Activation(data=fc_position, act_type='relu', name='fc_position_relu')
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
 
@@ -302,7 +305,7 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
                 else:
                     batch_rois_num = cfg.TRAIN.BATCH_ROIS
                 bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_, grad_scale=1.0 / batch_rois_num)
-                #bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_, grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS)
+                # bbox_loss = mx.sym.MakeLoss(name='bbox_loss', data=bbox_loss_, grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS)
                 rcnn_label = label
 
             # reshape output
@@ -318,7 +321,7 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
                                       name='cls_prob_reshape')
             bbox_pred = mx.sym.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
                                        name='bbox_pred_reshape')
-            #group = mx.sym.Group([rois, cls_prob, bbox_pred, fc_new_1, aff_softmax_0, aff_softmax_1, aff_softmax_2, aff_softmax_3])
+            # group = mx.sym.Group([rois, cls_prob, bbox_pred, fc_new_1, aff_softmax_0, aff_softmax_1, aff_softmax_2, aff_softmax_3])
             group = mx.sym.Group([rois, cls_prob, bbox_pred, attention_1, attention_2])
 
         self.sym = group
@@ -357,7 +360,7 @@ class resnet_v1_101_rcnn_attention_1024_pairwise_position_multi_head_16(resnet_v
         arg_params['bbox_pred_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['bbox_pred_weight'])
         arg_params['bbox_pred_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['bbox_pred_bias'])
         for idx in range(2):
-            self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx+1)
+            self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx + 1)
 
     def init_weight(self, cfg, arg_params, aux_params):
         self.init_weight_rpn(cfg, arg_params, aux_params)

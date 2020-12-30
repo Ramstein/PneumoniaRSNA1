@@ -11,20 +11,19 @@
 # py-faster-rcnn (https://github.com/rbgirshick/py-faster-rcnn)
 # --------------------------------------------------------
 
-import numpy as np
-import os
-from os.path import join as pjoin
-#from distutils.core import setup
-from setuptools import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
-import subprocess
 
-#change for windows, by MrX
+import numpy as np
+from Cython.Distutils import build_ext
+# from distutils.core import setup
+from setuptools import setup
+
+# change for windows, by MrX
 nvcc_bin = 'nvcc.exe'
 lib_dir = 'lib/x64'
 
 import distutils.msvc9compiler
+
 distutils.msvc9compiler.VERSION = 14.0
 
 # Obtain the numpy include directory.  This logic works across numpy versions.
@@ -39,7 +38,7 @@ ext_modules = [
         "bbox",
         sources=["bbox.pyx"],
         extra_compile_args={},
-        include_dirs = [numpy_include]
+        include_dirs=[numpy_include]
     ),
 ]
 

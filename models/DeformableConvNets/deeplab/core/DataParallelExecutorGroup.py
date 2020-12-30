@@ -12,12 +12,13 @@
 # --------------------------------------------------------
 
 import logging
-import numpy as np
 
+import numpy as np
 from mxnet import context as ctx
 from mxnet import ndarray as nd
-from mxnet.io import DataDesc
 from mxnet.executor_manager import _split_input_slice
+from mxnet.io import DataDesc
+
 
 def _load_general(data, targets, major_axis):
     """Load a list of arrays into a list of arrays specified by slices"""
@@ -55,7 +56,6 @@ def _merge_multi_context(outputs, major_axis):
             # first one, without checking they are actually the same
             rets.append(tensors[0])
     return rets
-
 
 
 class DataParallelExecutorGroup(object):
@@ -102,6 +102,7 @@ class DataParallelExecutorGroup(object):
         (default to 'write').
         Can be specified globally (str) or for each argument (list, dict).
     """
+
     def __init__(self, symbol, contexts, workload, data_shapes, label_shapes, param_names,
                  for_training, inputs_need_grad, shared_group=None, logger=logging,
                  fixed_param_names=None, grad_req='write', state_names=None):
@@ -117,7 +118,7 @@ class DataParallelExecutorGroup(object):
         self.inputs_need_grad = inputs_need_grad
 
         self.logger = logger
-        #In the future we should have a better way to profile memory per device (haibin)
+        # In the future we should have a better way to profile memory per device (haibin)
         # self._total_exec_bytes = 0
         self.fixed_param_names = fixed_param_names
         if self.fixed_param_names is None:
@@ -309,7 +310,6 @@ class DataParallelExecutorGroup(object):
         self.label_shapes = label_shapes
         self._collect_arrays()
 
-
     def set_params(self, arg_params, aux_params):
         """Assign, i.e. copy parameters to all the executors.
 
@@ -427,7 +427,7 @@ class DataParallelExecutorGroup(object):
         """
         if states is not None:
             assert value is None, "Only one of states & value can be specified."
-            _load_general(states, self.state_arrays, (0,)*len(states))
+            _load_general(states, self.state_arrays, (0,) * len(states))
         else:
             assert value is not None, "At least one of states & value must be specified."
             assert states is None, "Only one of states & value can be specified."
@@ -544,7 +544,7 @@ class DataParallelExecutorGroup(object):
         # create or borrow arguments and gradients
         for j in range(len(self.arg_names)):
             name = self.arg_names[j]
-            if name in self.param_names: # model parameters
+            if name in self.param_names:  # model parameters
                 if shared_exec is None:
                     arg_arr = nd.zeros(arg_shapes[j], context, dtype=arg_types[j])
                     if self.grad_req[name] != 'null':
@@ -556,7 +556,7 @@ class DataParallelExecutorGroup(object):
                     assert arg_arr.dtype == arg_types[j]
                     if self.grad_req[name] != 'null':
                         grad_arrays[name] = shared_exec.grad_dict[name]
-            else: # data, label, or states
+            else:  # data, label, or states
                 arg_arr = _get_or_reshape(name, shared_data_arrays, arg_shapes[j], arg_types[j],
                                           context, self.logger)
 

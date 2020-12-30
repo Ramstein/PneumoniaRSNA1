@@ -72,16 +72,14 @@ Tests comparing this model to the existing Tensorflow model can be
 found at [mobilenet_v2_keras]
 (https://github.com/JonathanCMitchell/mobilenet_v2_keras)
 """
-from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
 
 import os
 import warnings
+
 import numpy as np
-
-import keras
-
 from keras_applications import get_keras_submodule
 
 backend = get_keras_submodule('backend')
@@ -89,10 +87,6 @@ engine = get_keras_submodule('engine')
 layers = get_keras_submodule('layers')
 models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
-
-from keras_applications import imagenet_utils
-from keras_applications.imagenet_utils import decode_predictions
-from keras_applications.imagenet_utils import _obtain_input_shape
 
 # TODO Change path to v1.1
 BASE_WEIGHT_PATH = ('https://github.com/JonathanCMitchell/mobilenet_v2_keras/'
@@ -279,7 +273,6 @@ def MobileNetV2(input_shape=None,
             cols = input_shape[1]
         default_size = rows
 
-
     if backend.image_data_format() == 'channels_last':
         row_axis, col_axis = (0, 1)
     else:
@@ -423,14 +416,14 @@ def MobileNetV2(input_shape=None,
             weights_path = keras_utils.get_file(
                 model_name, weigh_path, cache_subdir='models')
         else:
-            if channels == "gray": 
+            if channels == "gray":
                 weights_path = "/users/ipan/grayscale-models/weights/mobilenet_v2_gray.h5"
-            else: 
-            	model_name = ('mobilenet_v2_weights_tf_dim_ordering_tf_kernels_' +
-                	          str(alpha) + '_' + str(rows) + '_no_top' + '.h5')
-            	weigh_path = BASE_WEIGHT_PATH + model_name
-            	weights_path = keras_utils.get_file(
-                	model_name, weigh_path, cache_subdir='models')
+            else:
+                model_name = ('mobilenet_v2_weights_tf_dim_ordering_tf_kernels_' +
+                              str(alpha) + '_' + str(rows) + '_no_top' + '.h5')
+                weigh_path = BASE_WEIGHT_PATH + model_name
+                weights_path = keras_utils.get_file(
+                    model_name, weigh_path, cache_subdir='models')
         model.load_weights(weights_path)
     elif weights is not None:
         model.load_weights(weights)

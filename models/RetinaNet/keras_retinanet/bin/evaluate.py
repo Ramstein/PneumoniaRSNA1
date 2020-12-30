@@ -25,6 +25,7 @@ import tensorflow as tf
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
     import keras_retinanet.bin  # noqa: F401
+
     __package__ = "keras_retinanet.bin"
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
@@ -79,7 +80,7 @@ def create_generator(args):
 def parse_args(args):
     """ Parse the arguments.
     """
-    parser     = argparse.ArgumentParser(description='Evaluation script for a RetinaNet network.')
+    parser = argparse.ArgumentParser(description='Evaluation script for a RetinaNet network.')
     subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
     subparsers.required = True
 
@@ -93,17 +94,25 @@ def parse_args(args):
     csv_parser.add_argument('annotations', help='Path to CSV file containing annotations for evaluation.')
     csv_parser.add_argument('classes', help='Path to a CSV file containing class label mapping.')
 
-    parser.add_argument('model',             help='Path to RetinaNet model.')
-    parser.add_argument('--convert-model',   help='Convert the model to an inference model (ie. the input is a training model).', action='store_true')
-    parser.add_argument('--backbone',        help='The backbone of the model.', default='resnet50')
-    parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
-    parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).', default=0.05, type=float)
-    parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).', default=0.5, type=float)
-    parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).', default=100, type=int)
-    parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).')
-    parser.add_argument('--image-min-side',  help='Rescale the image so the smallest side is min_side.', type=int, default=800)
-    parser.add_argument('--image-max-side',  help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
-    parser.add_argument('--weighted-average',   help='Compute the mAP using the weighted average of precisions among classes.', action='store_true')
+    parser.add_argument('model', help='Path to RetinaNet model.')
+    parser.add_argument('--convert-model',
+                        help='Convert the model to an inference model (ie. the input is a training model).',
+                        action='store_true')
+    parser.add_argument('--backbone', help='The backbone of the model.', default='resnet50')
+    parser.add_argument('--gpu', help='Id of the GPU to use (as reported by nvidia-smi).')
+    parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',
+                        default=0.05, type=float)
+    parser.add_argument('--iou-threshold', help='IoU Threshold to count for a positive detection (defaults to 0.5).',
+                        default=0.5, type=float)
+    parser.add_argument('--max-detections', help='Max Detections per image (defaults to 100).', default=100, type=int)
+    parser.add_argument('--save-path', help='Path for saving images with detections (doesn\'t work for COCO).')
+    parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int,
+                        default=800)
+    parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.',
+                        type=int, default=1333)
+    parser.add_argument('--weighted-average',
+                        help='Compute the mAP using the weighted average of precisions among classes.',
+                        action='store_true')
 
     return parser.parse_args(args)
 
@@ -159,7 +168,8 @@ def main(args=None):
             total_instances.append(num_annotations)
             precisions.append(average_precision)
         if args.weighted_average:
-            print('mAP: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
+            print(
+                'mAP: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
         else:
             print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
 

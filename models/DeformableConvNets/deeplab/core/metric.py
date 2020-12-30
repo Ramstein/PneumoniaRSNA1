@@ -14,6 +14,7 @@
 import mxnet as mx
 import numpy as np
 
+
 class FCNLogLossMetric(mx.metric.EvalMetric):
     def __init__(self, show_interval):
         super(FCNLogLossMetric, self).__init__('FCNLogLoss')

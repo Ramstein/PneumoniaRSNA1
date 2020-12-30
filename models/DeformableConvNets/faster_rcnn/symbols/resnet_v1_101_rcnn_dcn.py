@@ -7,10 +7,10 @@
 
 import cPickle
 import mxnet as mx
-from utils.symbol import Symbol
+from operator_py.box_annotator_ohem import *
 from operator_py.proposal import *
 from operator_py.proposal_target import *
-from operator_py.box_annotator_ohem import *
+from utils.symbol import Symbol
 
 
 class resnet_v1_101_rcnn_dcn(Symbol):
@@ -685,7 +685,8 @@ class resnet_v1_101_rcnn_dcn(Symbol):
     def get_resnet_v1_conv5(self, conv_feat):
         res5a_branch1 = mx.symbol.Convolution(name='res5a_branch1', data=conv_feat, num_filter=2048, pad=(0, 0),
                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
-        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True, fix_gamma=False, eps=self.eps)
+        bn5a_branch1 = mx.symbol.BatchNorm(name='bn5a_branch1', data=res5a_branch1, use_global_stats=True,
+                                           fix_gamma=False, eps=self.eps)
         scale5a_branch1 = bn5a_branch1
         res5a_branch2a = mx.symbol.Convolution(name='res5a_branch2a', data=conv_feat, num_filter=512, pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
@@ -693,16 +694,20 @@ class resnet_v1_101_rcnn_dcn(Symbol):
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2a = bn5a_branch2a
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
-        res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data = res5a_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu, offset=res5a_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu,
+                                                                 offset=res5a_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5a_branch2b = mx.symbol.BatchNorm(name='bn5a_branch2b', data=res5a_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2b = bn5a_branch2b
         res5a_branch2b_relu = mx.symbol.Activation(name='res5a_branch2b_relu', data=scale5a_branch2b, act_type='relu')
-        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5a_branch2c = mx.symbol.BatchNorm(name='bn5a_branch2c', data=res5a_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -715,16 +720,20 @@ class resnet_v1_101_rcnn_dcn(Symbol):
                                             fix_gamma=False, eps=self.eps)
         scale5b_branch2a = bn5b_branch2a
         res5b_branch2a_relu = mx.symbol.Activation(name='res5b_branch2a_relu', data=scale5b_branch2a, act_type='relu')
-        res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data = res5b_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu, offset=res5b_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5b_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5b_branch2b', data=res5b_branch2a_relu,
+                                                                 offset=res5b_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5b_branch2b = mx.symbol.BatchNorm(name='bn5b_branch2b', data=res5b_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5b_branch2b = bn5b_branch2b
         res5b_branch2b_relu = mx.symbol.Activation(name='res5b_branch2b_relu', data=scale5b_branch2b, act_type='relu')
-        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5b_branch2c = mx.symbol.Convolution(name='res5b_branch2c', data=res5b_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5b_branch2c = mx.symbol.BatchNorm(name='bn5b_branch2c', data=res5b_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -737,16 +746,20 @@ class resnet_v1_101_rcnn_dcn(Symbol):
                                             fix_gamma=False, eps=self.eps)
         scale5c_branch2a = bn5c_branch2a
         res5c_branch2a_relu = mx.symbol.Activation(name='res5c_branch2a_relu', data=scale5c_branch2a, act_type='relu')
-        res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data = res5c_branch2a_relu,
-                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1), dilate=(2, 2), cudnn_off=True)
-        res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu, offset=res5c_branch2b_offset,
-                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3), num_deformable_group=4,
+        res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu,
+                                                      num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
+                                                      dilate=(2, 2), cudnn_off=True)
+        res5c_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5c_branch2b', data=res5c_branch2a_relu,
+                                                                 offset=res5c_branch2b_offset,
+                                                                 num_filter=512, pad=(2, 2), kernel=(3, 3),
+                                                                 num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
         bn5c_branch2b = mx.symbol.BatchNorm(name='bn5c_branch2b', data=res5c_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5c_branch2b = bn5c_branch2b
         res5c_branch2b_relu = mx.symbol.Activation(name='res5c_branch2b_relu', data=scale5c_branch2b, act_type='relu')
-        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048, pad=(0, 0),
+        res5c_branch2c = mx.symbol.Convolution(name='res5c_branch2c', data=res5c_branch2b_relu, num_filter=2048,
+                                               pad=(0, 0),
                                                kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5c_branch2c = mx.symbol.BatchNorm(name='bn5c_branch2c', data=res5c_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
@@ -754,7 +767,6 @@ class resnet_v1_101_rcnn_dcn(Symbol):
         res5c = mx.symbol.broadcast_add(name='res5c', *[res5b_relu, scale5c_branch2c])
         res5c_relu = mx.symbol.Activation(name='res5c_relu', data=res5c, act_type='relu')
         return res5c_relu
-
 
     def get_rpn(self, conv_feat, num_anchors):
         rpn_conv = mx.sym.Convolution(
@@ -861,14 +873,19 @@ class resnet_v1_101_rcnn_dcn(Symbol):
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
 
-        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
-                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
+        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1,
+                                                         pooled_size=7,
+                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256,
+                                                         spatial_scale=0.0625)
         offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
         offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
-                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
-                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
+        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu,
+                                                                    rois=rois,
+                                                                    trans=offset_reshape, group_size=1, pooled_size=7,
+                                                                    sample_per_part=4,
+                                                                    no_trans=False, part_size=7, output_dim=256,
+                                                                    spatial_scale=0.0625, trans_std=0.1)
         # 2 fc
         fc_new_1 = mx.sym.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
         fc_new_1_relu = mx.sym.Activation(data=fc_new_1, act_type='relu', name='fc_new_1_relu')
@@ -1011,14 +1028,19 @@ class resnet_v1_101_rcnn_dcn(Symbol):
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
 
-        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
-                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
+        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1,
+                                                         pooled_size=7,
+                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256,
+                                                         spatial_scale=0.0625)
         offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
         offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
-                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
-                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
+        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu,
+                                                                    rois=rois,
+                                                                    trans=offset_reshape, group_size=1, pooled_size=7,
+                                                                    sample_per_part=4,
+                                                                    no_trans=False, part_size=7, output_dim=256,
+                                                                    spatial_scale=0.0625, trans_std=0.1)
 
         # 2 fc
         fc_new_1 = mx.sym.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
@@ -1071,15 +1093,20 @@ class resnet_v1_101_rcnn_dcn(Symbol):
     def init_weight(self, cfg, arg_params, aux_params):
         arg_params['rpn_conv_3x3_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['rpn_conv_3x3_weight'])
         arg_params['rpn_conv_3x3_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_conv_3x3_bias'])
-        arg_params['rpn_cls_score_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['rpn_cls_score_weight'])
+        arg_params['rpn_cls_score_weight'] = mx.random.normal(0, 0.01,
+                                                              shape=self.arg_shape_dict['rpn_cls_score_weight'])
         arg_params['rpn_cls_score_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_cls_score_bias'])
-        arg_params['rpn_bbox_pred_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['rpn_bbox_pred_weight'])
+        arg_params['rpn_bbox_pred_weight'] = mx.random.normal(0, 0.01,
+                                                              shape=self.arg_shape_dict['rpn_bbox_pred_weight'])
         arg_params['rpn_bbox_pred_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_bbox_pred_bias'])
-        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
+        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
         arg_params['res5a_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_bias'])
-        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
+        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
         arg_params['res5b_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_bias'])
-        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
+        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
         arg_params['res5c_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_bias'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['conv_new_1_bias'])
@@ -1105,11 +1132,14 @@ class resnet_v1_101_rcnn_dcn(Symbol):
         arg_params['rpn_bbox_pred_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_bbox_pred_bias'])
 
     def init_weight_rcnn(self, cfg, arg_params, aux_params):
-        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
+        arg_params['res5a_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5a_branch2b_offset_weight'])
         arg_params['res5a_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5a_branch2b_offset_bias'])
-        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
+        arg_params['res5b_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5b_branch2b_offset_weight'])
         arg_params['res5b_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5b_branch2b_offset_bias'])
-        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
+        arg_params['res5c_branch2b_offset_weight'] = mx.nd.zeros(
+            shape=self.arg_shape_dict['res5c_branch2b_offset_weight'])
         arg_params['res5c_branch2b_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['res5c_branch2b_offset_bias'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
@@ -1124,4 +1154,3 @@ class resnet_v1_101_rcnn_dcn(Symbol):
         arg_params['cls_score_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['cls_score_bias'])
         arg_params['bbox_pred_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['bbox_pred_weight'])
         arg_params['bbox_pred_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['bbox_pred_bias'])
-

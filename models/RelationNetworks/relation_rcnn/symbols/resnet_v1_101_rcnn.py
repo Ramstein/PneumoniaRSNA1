@@ -7,10 +7,9 @@
 
 import cPickle
 import mxnet as mx
-from utils.symbol import Symbol
+from operator_py.box_annotator_ohem import *
 from operator_py.proposal import *
 from operator_py.proposal_target import *
-from operator_py.box_annotator_ohem import *
 from resnet_v1_101_rcnn_base import resnet_v1_101_rcnn_base
 
 
@@ -22,7 +21,7 @@ class resnet_v1_101_rcnn(resnet_v1_101_rcnn_base):
         self.eps = 1e-5
         self.use_global_stats = True
         self.workspace = 512
-        self.units = (3, 4, 23, 3) # use for 101
+        self.units = (3, 4, 23, 3)  # use for 101
         self.filter_list = [256, 512, 1024, 2048]
 
     def get_symbol(self, cfg, is_train=True):
@@ -58,12 +57,15 @@ class resnet_v1_101_rcnn(resnet_v1_101_rcnn_base):
 
             # classification
             rpn_cls_prob = mx.sym.SoftmaxOutput(data=rpn_cls_score_reshape, label=rpn_label, multi_output=True,
-                                                   normalization='valid', use_ignore=True, ignore_label=-1, name="rpn_cls_prob")
+                                                normalization='valid', use_ignore=True, ignore_label=-1,
+                                                name="rpn_cls_prob")
 
             # bounding box regression
-            rpn_bbox_loss_ = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_', scalar=3.0, data=(rpn_bbox_pred - rpn_bbox_target))
+            rpn_bbox_loss_ = rpn_bbox_weight * mx.sym.smooth_l1(name='rpn_bbox_loss_', scalar=3.0,
+                                                                data=(rpn_bbox_pred - rpn_bbox_target))
 
-            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss_, grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
+            rpn_bbox_loss = mx.sym.MakeLoss(name='rpn_bbox_loss', data=rpn_bbox_loss_,
+                                            grad_scale=1.0 / cfg.TRAIN.RPN_BATCH_SIZE)
 
             # ROI proposal
             rpn_cls_act = mx.sym.SoftmaxActivation(
@@ -191,4 +193,3 @@ class resnet_v1_101_rcnn(resnet_v1_101_rcnn_base):
     def init_weight(self, cfg, arg_params, aux_params):
         self.init_weight_rpn(cfg, arg_params, aux_params)
         self.init_weight_rcnn(cfg, arg_params, aux_params)
-

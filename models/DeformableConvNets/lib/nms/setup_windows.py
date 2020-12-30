@@ -5,20 +5,21 @@
 # Modified from py-faster-rcnn (https://github.com/rbgirshick/py-faster-rcnn)
 # --------------------------------------------------------
 
-import numpy as np
 import os
-from os.path import join as pjoin
-#from distutils.core import setup
-from setuptools import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
-import subprocess
+from os.path import join as pjoin
 
-#change for windows, by MrX
+import numpy as np
+from Cython.Distutils import build_ext
+# from distutils.core import setup
+from setuptools import setup
+
+# change for windows, by MrX
 nvcc_bin = 'nvcc.exe'
 lib_dir = 'lib/x64'
 
 import distutils.msvc9compiler
+
 distutils.msvc9compiler.VERSION = 14.0
 
 
@@ -54,12 +55,11 @@ def locate_cuda():
         nvcc = find_in_path(nvcc_bin, os.environ['PATH'] + os.pathsep + default_path)
         if nvcc is None:
             raise EnvironmentError('The nvcc binary could not be '
-                'located in your $PATH. Either add it to your path, or set $CUDA_PATH')
+                                   'located in your $PATH. Either add it to your path, or set $CUDA_PATH')
         home = os.path.dirname(os.path.dirname(nvcc))
         print("home = %s, nvcc = %s\n" % (home, nvcc))
 
-
-    cudaconfig = {'home':home, 'nvcc':nvcc,
+    cudaconfig = {'home': home, 'nvcc': nvcc,
                   'include': pjoin(home, 'include'),
                   'lib64': pjoin(home, lib_dir)}
     for k, v in cudaconfig.iteritems():
@@ -67,8 +67,9 @@ def locate_cuda():
             raise EnvironmentError('The CUDA %s path could not be located in %s' % (k, v))
 
     return cudaconfig
-CUDA = locate_cuda()
 
+
+CUDA = locate_cuda()
 
 # Obtain the numpy include directory.  This logic works across numpy versions.
 try:
@@ -88,33 +89,32 @@ def customize_compiler_for_nvcc(self):
     subclassing going on."""
 
     # tell the compiler it can processes .cu
-    #self.src_extensions.append('.cu')
+    # self.src_extensions.append('.cu')
 
-	
     # save references to the default compiler_so and _comple methods
-    #default_compiler_so = self.spawn 
-    #default_compiler_so = self.rc
+    # default_compiler_so = self.spawn
+    # default_compiler_so = self.rc
     super = self.compile
 
     # now redefine the _compile method. This gets executed for each
     # object but distutils doesn't have the ability to change compilers
     # based on source extension: we add it.
-    def compile(sources, output_dir=None, macros=None, include_dirs=None, debug=0, extra_preargs=None, extra_postargs=None, depends=None):
-        postfix=os.path.splitext(sources[0])[1]
-        
+    def compile(sources, output_dir=None, macros=None, include_dirs=None, debug=0, extra_preargs=None,
+                extra_postargs=None, depends=None):
+        postfix = os.path.splitext(sources[0])[1]
+
         if postfix == '.cu':
             # use the cuda for .cu files
-            #self.set_executable('compiler_so', CUDA['nvcc'])
+            # self.set_executable('compiler_so', CUDA['nvcc'])
             # use only a subset of the extra_postargs, which are 1-1 translated
             # from the extra_compile_args in the Extension class
             postargs = extra_postargs['nvcc']
         else:
             postargs = extra_postargs['gcc']
 
-
         return super(sources, output_dir, macros, include_dirs, debug, extra_preargs, postargs, depends)
         # reset the default compiler_so, which we might have changed for cuda
-        #self.rc = default_compiler_so
+        # self.rc = default_compiler_so
 
     # inject our redefined _compile method into the class
     self.compile = compile
@@ -133,7 +133,7 @@ ext_modules = [
         "cpu_nms",
         sources=["cpu_nms.pyx"],
         extra_compile_args={'gcc': []},
-        include_dirs = [numpy_include],
+        include_dirs=[numpy_include],
     ),
 ]
 

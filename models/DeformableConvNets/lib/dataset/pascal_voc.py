@@ -13,15 +13,16 @@ function. Results are written as the Pascal VOC format. Evaluation is based on m
 criterion.
 """
 
+import os
+
+import PIL
 import cPickle
 import cv2
-import os
 import numpy as np
-import PIL
-
-from imdb import IMDB
-from pascal_voc_eval import voc_eval, voc_eval_sds
 from ds_utils import unique_boxes, filter_small_boxes
+from imdb import IMDB
+from pascal_voc_eval import voc_eval
+
 
 class PascalVOC(IMDB):
     def __init__(self, image_set, root_path, devkit_path, result_path=None, mask_size=-1, binary_thresh=None):
@@ -33,7 +34,7 @@ class PascalVOC(IMDB):
         :return: imdb object
         """
         year = image_set.split('_')[0]
-        image_set = image_set[len(year) + 1 : len(image_set)]
+        image_set = image_set[len(year) + 1: len(image_set)]
         super(PascalVOC, self).__init__('voc_' + year, image_set, root_path, devkit_path, result_path)  # set self.name
 
         self.year = year
@@ -50,7 +51,8 @@ class PascalVOC(IMDB):
         self.num_classes = len(self.classes)
         self.image_set_index = self.load_image_set_index()
         self.num_images = len(self.image_set_index)
-        print 'num_images', self.num_images
+        print
+        'num_images', self.num_images
         self.mask_size = mask_size
         self.binary_thresh = binary_thresh
 
@@ -98,13 +100,15 @@ class PascalVOC(IMDB):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} gt roidb loaded from {}'.format(self.name, cache_file)
+            print
+            '{} gt roidb loaded from {}'.format(self.name, cache_file)
             return roidb
 
         gt_roidb = [self.load_pascal_annotation(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt roidb to {}'.format(cache_file)
+        print
+        'wrote gt roidb to {}'.format(cache_file)
 
         return gt_roidb
 
@@ -117,13 +121,15 @@ class PascalVOC(IMDB):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 segdb = cPickle.load(fid)
-            print '{} gt segdb loaded from {}'.format(self.name, cache_file)
+            print
+            '{} gt segdb loaded from {}'.format(self.name, cache_file)
             return segdb
 
         gt_segdb = [self.load_pascal_segmentation_annotation(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_segdb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt segdb to {}'.format(cache_file)
+        print
+        'wrote gt segdb to {}'.format(cache_file)
 
         return gt_segdb
 
@@ -142,8 +148,8 @@ class PascalVOC(IMDB):
         size = tree.find('size')
         roi_rec['height'] = float(size.find('height').text)
         roi_rec['width'] = float(size.find('width').text)
-        #im_size = cv2.imread(roi_rec['image'], cv2.IMREAD_COLOR|cv2.IMREAD_IGNORE_ORIENTATION).shape
-        #assert im_size[0] == roi_rec['height'] and im_size[1] == roi_rec['width']
+        # im_size = cv2.imread(roi_rec['image'], cv2.IMREAD_COLOR|cv2.IMREAD_IGNORE_ORIENTATION).shape
+        # assert im_size[0] == roi_rec['height'] and im_size[1] == roi_rec['width']
 
         objs = tree.findall('object')
         if not self.config['use_diff']:
@@ -210,18 +216,21 @@ class PascalVOC(IMDB):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} ss roidb loaded from {}'.format(self.name, cache_file)
+            print
+            '{} ss roidb loaded from {}'.format(self.name, cache_file)
             return roidb
 
         if append_gt:
-            print 'appending ground truth annotations'
+            print
+            'appending ground truth annotations'
             ss_roidb = self.load_selective_search_roidb(gt_roidb)
             roidb = IMDB.merge_roidbs(gt_roidb, ss_roidb)
         else:
             roidb = self.load_selective_search_roidb(gt_roidb)
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote ss roidb to {}'.format(cache_file)
+        print
+        'wrote ss roidb to {}'.format(cache_file)
 
         return roidb
 
@@ -231,7 +240,6 @@ class PascalVOC(IMDB):
         :param index: index of a specific image
         :return: record['seg_cls_path', 'flipped']
         """
-        import xml.etree.ElementTree as ET
         seg_rec = dict()
         seg_rec['image'] = self.image_path_from_index(index)
         size = cv2.imread(seg_rec['image']).shape
@@ -304,7 +312,7 @@ class PascalVOC(IMDB):
             segmentation_result = np.uint8(np.squeeze(np.copy(pred_segmentations[i])))
             segmentation_result = PIL.Image.fromarray(segmentation_result)
             segmentation_result.putpalette(pallete)
-            segmentation_result.save(os.path.join(result_dir, '%s.png'%(index)))
+            segmentation_result.save(os.path.join(result_dir, '%s.png' % (index)))
 
     def get_pallete(self, num_cls):
         """
@@ -313,19 +321,19 @@ class PascalVOC(IMDB):
         :return: the pallete
         """
         n = num_cls
-        pallete = [0]*(n*3)
-        for j in xrange(0,n):
-                lab = j
-                pallete[j*3+0] = 0
-                pallete[j*3+1] = 0
-                pallete[j*3+2] = 0
-                i = 0
-                while (lab > 0):
-                        pallete[j*3+0] |= (((lab >> 0) & 1) << (7-i))
-                        pallete[j*3+1] |= (((lab >> 1) & 1) << (7-i))
-                        pallete[j*3+2] |= (((lab >> 2) & 1) << (7-i))
-                        i = i + 1
-                        lab >>= 3
+        pallete = [0] * (n * 3)
+        for j in xrange(0, n):
+            lab = j
+            pallete[j * 3 + 0] = 0
+            pallete[j * 3 + 1] = 0
+            pallete[j * 3 + 2] = 0
+            i = 0
+            while (lab > 0):
+                pallete[j * 3 + 0] |= (((lab >> 0) & 1) << (7 - i))
+                pallete[j * 3 + 1] |= (((lab >> 1) & 1) << (7 - i))
+                pallete[j * 3 + 2] |= (((lab >> 2) & 1) << (7 - i))
+                i = i + 1
+                lab >>= 3
         return pallete
 
     def get_confusion_matrix(self, gt_label, pred_label, class_num):
@@ -354,14 +362,14 @@ class PascalVOC(IMDB):
         :param pred_segmentations: the pred segmentation result
         :return: the evaluation metrics
         """
-        confusion_matrix = np.zeros((self.num_classes,self.num_classes))
+        confusion_matrix = np.zeros((self.num_classes, self.num_classes))
         result_dir = os.path.join(self.result_path, 'results', 'VOC' + self.year, 'Segmentation')
 
         for i, index in enumerate(self.image_set_index):
             seg_gt_info = self.load_pascal_segmentation_annotation(index)
             seg_gt_path = seg_gt_info['seg_cls_path']
             seg_gt = np.array(PIL.Image.open(seg_gt_path)).astype('float32')
-            seg_pred_path = os.path.join(result_dir, '%s.png'%(index))
+            seg_pred_path = os.path.join(result_dir, '%s.png' % (index))
             seg_pred = np.array(PIL.Image.open(seg_pred_path)).astype('float32')
 
             seg_gt = cv2.resize(seg_gt, (seg_pred.shape[1], seg_pred.shape[0]), interpolation=cv2.INTER_NEAREST)
@@ -378,7 +386,7 @@ class PascalVOC(IMDB):
         IU_array = (tp / np.maximum(1.0, pos + res - tp))
         mean_IU = IU_array.mean()
 
-        return {'meanIU':mean_IU, 'IU_array':IU_array}
+        return {'meanIU': mean_IU, 'IU_array': IU_array}
 
     def get_result_file_template(self):
         """
@@ -401,7 +409,8 @@ class PascalVOC(IMDB):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print 'Writing {} VOC results file'.format(cls)
+            print
+            'Writing {} VOC results file'.format(cls)
             filename = self.get_result_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_set_index):
@@ -426,7 +435,8 @@ class PascalVOC(IMDB):
         aps = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if self.year == 'SDS' or int(self.year) < 2010 else False
-        print 'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
+        print
+        'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
         info_str += 'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
         info_str += '\n'
         for cls_ind, cls in enumerate(self.classes):

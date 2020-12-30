@@ -7,6 +7,8 @@
 # --------------------------------------------------------
 
 import numpy as np
+
+
 class Symbol:
     def __init__(self):
         self.arg_shape_dict = None

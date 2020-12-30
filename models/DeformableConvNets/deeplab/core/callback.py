@@ -11,9 +11,9 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import time
 import logging
-import mxnet as mx
+import time
+
 
 class Speedometer(object):
     def __init__(self, batch_size, frequent=50):

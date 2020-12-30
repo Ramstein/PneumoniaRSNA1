@@ -11,7 +11,6 @@ Proposal Target Operator selects foreground and background roi and assigns label
 
 import mxnet as mx
 import numpy as np
-from distutils.util import strtobool
 
 
 class BoxAnnotatorOHEMOperator(mx.operator.CustomOp):
@@ -23,9 +22,9 @@ class BoxAnnotatorOHEMOperator(mx.operator.CustomOp):
 
     def forward(self, is_train, req, in_data, out_data, aux):
 
-        cls_score    = in_data[0]
-        bbox_pred    = in_data[1]
-        labels       = in_data[2].asnumpy()
+        cls_score = in_data[0]
+        bbox_pred = in_data[1]
+        labels = in_data[2].asnumpy()
         bbox_targets = in_data[3]
         bbox_weights = in_data[4]
 

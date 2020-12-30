@@ -11,8 +11,8 @@
 # py-faster-rcnn (https://github.com/rbgirshick/py-faster-rcnn)
 # --------------------------------------------------------
 
-import yaml
 import numpy as np
+import yaml
 from easydict import EasyDict as edict
 
 config = edict()
@@ -54,7 +54,6 @@ config.dataset.test_image_set = '2007_test'
 config.dataset.root_path = './data'
 config.dataset.dataset_path = './data/VOCdevkit'
 config.dataset.NUM_CLASSES = 21
-
 
 config.TRAIN = edict()
 

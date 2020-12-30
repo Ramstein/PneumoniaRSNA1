@@ -11,8 +11,9 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import time
 import logging
+import time
+
 import mxnet as mx
 
 
@@ -57,9 +58,13 @@ def do_checkpoint(prefix, means, stds):
         bias = arg['rfcn_bbox_bias']
         repeat = bias.shape[0] / means.shape[0]
 
-        arg['rfcn_bbox_weight_test'] = weight * mx.nd.repeat(mx.nd.array(stds), repeats=repeat).reshape((bias.shape[0], 1, 1, 1))
-        arg['rfcn_bbox_bias_test'] = arg['rfcn_bbox_bias'] * mx.nd.repeat(mx.nd.array(stds), repeats=repeat) + mx.nd.repeat(mx.nd.array(means), repeats=repeat)
+        arg['rfcn_bbox_weight_test'] = weight * mx.nd.repeat(mx.nd.array(stds), repeats=repeat).reshape(
+            (bias.shape[0], 1, 1, 1))
+        arg['rfcn_bbox_bias_test'] = arg['rfcn_bbox_bias'] * mx.nd.repeat(mx.nd.array(stds),
+                                                                          repeats=repeat) + mx.nd.repeat(
+            mx.nd.array(means), repeats=repeat)
         mx.model.save_checkpoint(prefix, iter_no + 1, sym, arg, aux)
         arg.pop('rfcn_bbox_weight_test')
         arg.pop('rfcn_bbox_bias_test')
+
     return _callback

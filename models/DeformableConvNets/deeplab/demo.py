@@ -11,18 +11,16 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import _init_paths
-
 import argparse
 import os
-import sys
-import logging
 import pprint
+import sys
+
 import cv2
+import numpy as np
+from PIL import Image
 from config.config import config, update_config
 from utils.image import resize, transform
-from PIL import Image
-import numpy as np
 
 # get config
 os.environ['PYTHONUNBUFFERED'] = '1'
@@ -33,20 +31,24 @@ update_config(cur_path + '/../experiments/deeplab/cfgs/deeplab_cityscapes_demo.y
 
 sys.path.insert(0, os.path.join(cur_path, '../external/mxnet', config.MXNET_VERSION))
 import mxnet as mx
-from core.tester import pred_eval, Predictor
+from core.tester import Predictor
 from symbols import *
 from utils.load_model import load_param
 from utils.tictoc import tic, toc
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Show Deformable ConvNets demo')
     # general
-    parser.add_argument('--deeplab_only', help='whether use Deeplab only (w/o Deformable ConvNets)', default=False, action='store_true')
+    parser.add_argument('--deeplab_only', help='whether use Deeplab only (w/o Deformable ConvNets)', default=False,
+                        action='store_true')
 
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
+
 
 def getpallete(num_cls):
     """
@@ -58,44 +60,45 @@ def getpallete(num_cls):
     pallete_raw = np.zeros((n, 3)).astype('uint8')
     pallete = np.zeros((n, 3)).astype('uint8')
 
-    pallete_raw[6, :] =  [111,  74,   0]
-    pallete_raw[7, :] =  [ 81,   0,  81]
-    pallete_raw[8, :] =  [128,  64, 128]
-    pallete_raw[9, :] =  [244,  35, 232]
-    pallete_raw[10, :] =  [250, 170, 160]
+    pallete_raw[6, :] = [111, 74, 0]
+    pallete_raw[7, :] = [81, 0, 81]
+    pallete_raw[8, :] = [128, 64, 128]
+    pallete_raw[9, :] = [244, 35, 232]
+    pallete_raw[10, :] = [250, 170, 160]
     pallete_raw[11, :] = [230, 150, 140]
-    pallete_raw[12, :] = [ 70,  70,  70]
+    pallete_raw[12, :] = [70, 70, 70]
     pallete_raw[13, :] = [102, 102, 156]
     pallete_raw[14, :] = [190, 153, 153]
     pallete_raw[15, :] = [180, 165, 180]
     pallete_raw[16, :] = [150, 100, 100]
-    pallete_raw[17, :] = [150, 120,  90]
+    pallete_raw[17, :] = [150, 120, 90]
     pallete_raw[18, :] = [153, 153, 153]
     pallete_raw[19, :] = [153, 153, 153]
-    pallete_raw[20, :] = [250, 170,  30]
-    pallete_raw[21, :] = [220, 220,   0]
-    pallete_raw[22, :] = [107, 142,  35]
+    pallete_raw[20, :] = [250, 170, 30]
+    pallete_raw[21, :] = [220, 220, 0]
+    pallete_raw[22, :] = [107, 142, 35]
     pallete_raw[23, :] = [152, 251, 152]
-    pallete_raw[24, :] = [ 70, 130, 180]
-    pallete_raw[25, :] = [220,  20,  60]
-    pallete_raw[26, :] = [255,   0,   0]
-    pallete_raw[27, :] = [  0,   0, 142]
-    pallete_raw[28, :] = [  0,   0,  70]
-    pallete_raw[29, :] = [  0,  60, 100]
-    pallete_raw[30, :] = [  0,   0,  90]
-    pallete_raw[31, :] = [  0,   0, 110]
-    pallete_raw[32, :] = [  0,  80, 100]
-    pallete_raw[33, :] = [  0,   0, 230]
-    pallete_raw[34, :] = [119,  11,  32]
+    pallete_raw[24, :] = [70, 130, 180]
+    pallete_raw[25, :] = [220, 20, 60]
+    pallete_raw[26, :] = [255, 0, 0]
+    pallete_raw[27, :] = [0, 0, 142]
+    pallete_raw[28, :] = [0, 0, 70]
+    pallete_raw[29, :] = [0, 60, 100]
+    pallete_raw[30, :] = [0, 0, 90]
+    pallete_raw[31, :] = [0, 0, 110]
+    pallete_raw[32, :] = [0, 80, 100]
+    pallete_raw[33, :] = [0, 0, 230]
+    pallete_raw[34, :] = [119, 11, 32]
 
     train2regular = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33]
 
     for i in range(len(train2regular)):
-        pallete[i, :] = pallete_raw[train2regular[i]+1, :]
+        pallete[i, :] = pallete_raw[train2regular[i] + 1, :]
 
     pallete = pallete.reshape(-1)
 
     return pallete
+
 
 def main():
     # get symbol
@@ -120,7 +123,6 @@ def main():
         im_info = np.array([[im_tensor.shape[2], im_tensor.shape[3], im_scale]], dtype=np.float32)
         data.append({'data': im_tensor, 'im_info': im_info})
 
-
     # get predictor
     data_names = ['data']
     label_names = ['softmax_label']
@@ -128,7 +130,9 @@ def main():
     max_data_shape = [[('data', (1, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]]
     provide_data = [[(k, v.shape) for k, v in zip(data_names, data[i])] for i in xrange(len(data))]
     provide_label = [None for i in xrange(len(data))]
-    arg_params, aux_params = load_param(cur_path + '/../model/' + ('deeplab_dcn_cityscapes' if not args.deeplab_only else 'deeplab_cityscapes'), 0, process=True)
+    arg_params, aux_params = load_param(
+        cur_path + '/../model/' + ('deeplab_dcn_cityscapes' if not args.deeplab_only else 'deeplab_cityscapes'), 0,
+        process=True)
     predictor = Predictor(sym, data_names, label_names,
                           context=[mx.gpu(0)], max_data_shapes=max_data_shape,
                           provide_data=provide_data, provide_label=provide_label,
@@ -156,7 +160,8 @@ def main():
         segmentation_result = np.uint8(np.squeeze(output_all))
         segmentation_result = Image.fromarray(segmentation_result)
         segmentation_result.putpalette(pallete)
-        print 'testing {} {:.4f}s'.format(im_name, toc())
+        print
+        'testing {} {:.4f}s'.format(im_name, toc())
         pure_im_name, ext_im_name = os.path.splitext(im_name)
         segmentation_result.save(cur_path + '/../demo/seg_' + pure_im_name + '.png')
         # visualize
@@ -165,7 +170,9 @@ def main():
         cv2.imshow('Raw Image', im_raw)
         cv2.imshow('segmentation_result', seg_res)
         cv2.waitKey(0)
-    print 'done'
+    print
+    'done'
+
 
 if __name__ == '__main__':
     main()

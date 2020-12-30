@@ -5,14 +5,15 @@
 # Written by Zheng Zhang
 # --------------------------------------------------------
 
-import cPickle
+import itertools
 import os
+
+import cPickle
 import cv2
 import numpy as np
-import itertools
-
-from imdb import IMDB
 from PIL import Image
+from imdb import IMDB
+
 
 class CityScape(IMDB):
     def __init__(self, image_set, root_path, dataset_path, result_path=None):
@@ -23,7 +24,7 @@ class CityScape(IMDB):
         :param dataset_path: data and results
         :return: imdb object
         """
-        image_set_main_folder, image_set_sub_folder= image_set.split('_', 1)
+        image_set_main_folder, image_set_sub_folder = image_set.split('_', 1)
         super(CityScape, self).__init__('cityscape', image_set, root_path, dataset_path, result_path)  # set self.name
 
         self.image_set_main_folder = image_set_main_folder
@@ -33,12 +34,12 @@ class CityScape(IMDB):
         self.num_classes = 19
         self.image_set_index = self.load_image_set_index()
         self.num_images = len(self.image_set_index)
-        print 'num_images', self.num_images
+        print
+        'num_images', self.num_images
 
         self.config = {'comp_id': 'comp4',
                        'use_diff': False,
                        'min_size': 2}
-
 
     def load_image_set_index(self):
         """
@@ -46,7 +47,7 @@ class CityScape(IMDB):
         :return: the indexes of given image set
         """
 
-        #Collection all subfolders
+        # Collection all subfolders
         image_set_main_folder_path = os.path.join(self.data_path, self.image_set_main_folder, self.image_set_sub_folder)
         image_name_set = [filename for parent, dirname, filename in os.walk(image_set_main_folder_path)]
         image_name_set = list(itertools.chain.from_iterable(image_name_set))
@@ -55,9 +56,9 @@ class CityScape(IMDB):
         for i, image_name in enumerate(image_name_set):
             splited_name_set = image_name.split('_')
             ext_split = splited_name_set[len(splited_name_set) - 1].split('.')
-            ext = ext_split[len(ext_split)-1]
+            ext = ext_split[len(ext_split) - 1]
             if splited_name_set[len(splited_name_set) - 1] != 'flip.png' and ext == 'png':
-                index_set[valid_index_count] = "_".join(splited_name_set[:len(splited_name_set)-1])
+                index_set[valid_index_count] = "_".join(splited_name_set[:len(splited_name_set) - 1])
                 valid_index_count += 1
 
         return index_set[:valid_index_count]
@@ -69,7 +70,8 @@ class CityScape(IMDB):
         :return: the image path
         """
         index_folder = index.split('_')[0]
-        image_file = os.path.join(self.data_path, self.image_set_main_folder, self.image_set_sub_folder, index_folder, index + '_' + self.image_set_main_folder + '.png')
+        image_file = os.path.join(self.data_path, self.image_set_main_folder, self.image_set_sub_folder, index_folder,
+                                  index + '_' + self.image_set_main_folder + '.png')
         assert os.path.exists(image_file), 'Path does not exist: {}'.format(image_file)
         return image_file
 
@@ -80,7 +82,8 @@ class CityScape(IMDB):
         :return: the image path
         """
         index_folder = index.split('_')[0]
-        image_file = os.path.join(self.data_path, 'gtFine', self.image_set_sub_folder, index_folder, index + '_gtFine_labelTrainIds.png')
+        image_file = os.path.join(self.data_path, 'gtFine', self.image_set_sub_folder, index_folder,
+                                  index + '_gtFine_labelTrainIds.png')
         assert os.path.exists(image_file), 'Path does not exist: {}'.format(image_file)
         return image_file
 
@@ -110,13 +113,15 @@ class CityScape(IMDB):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 segdb = cPickle.load(fid)
-            print '{} gt segdb loaded from {}'.format(self.name, cache_file)
+            print
+            '{} gt segdb loaded from {}'.format(self.name, cache_file)
             return segdb
 
         gt_segdb = [self.load_segdb_from_index(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_segdb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt segdb to {}'.format(cache_file)
+        print
+        'wrote gt segdb to {}'.format(cache_file)
 
         return gt_segdb
 
@@ -130,46 +135,46 @@ class CityScape(IMDB):
         pallete_raw = np.zeros((n, 3)).astype('uint8')
         pallete = np.zeros((n, 3)).astype('uint8')
 
-        pallete_raw[6, :] =  [111,  74,   0]
-        pallete_raw[7, :] =  [ 81,   0,  81]
-        pallete_raw[8, :] =  [128,  64, 128]
-        pallete_raw[9, :] =  [244,  35, 232]
-        pallete_raw[10, :] =  [250, 170, 160]
+        pallete_raw[6, :] = [111, 74, 0]
+        pallete_raw[7, :] = [81, 0, 81]
+        pallete_raw[8, :] = [128, 64, 128]
+        pallete_raw[9, :] = [244, 35, 232]
+        pallete_raw[10, :] = [250, 170, 160]
         pallete_raw[11, :] = [230, 150, 140]
-        pallete_raw[12, :] = [ 70,  70,  70]
+        pallete_raw[12, :] = [70, 70, 70]
         pallete_raw[13, :] = [102, 102, 156]
         pallete_raw[14, :] = [190, 153, 153]
         pallete_raw[15, :] = [180, 165, 180]
         pallete_raw[16, :] = [150, 100, 100]
-        pallete_raw[17, :] = [150, 120,  90]
+        pallete_raw[17, :] = [150, 120, 90]
         pallete_raw[18, :] = [153, 153, 153]
         pallete_raw[19, :] = [153, 153, 153]
-        pallete_raw[20, :] = [250, 170,  30]
-        pallete_raw[21, :] = [220, 220,   0]
-        pallete_raw[22, :] = [107, 142,  35]
+        pallete_raw[20, :] = [250, 170, 30]
+        pallete_raw[21, :] = [220, 220, 0]
+        pallete_raw[22, :] = [107, 142, 35]
         pallete_raw[23, :] = [152, 251, 152]
-        pallete_raw[24, :] = [ 70, 130, 180]
-        pallete_raw[25, :] = [220,  20,  60]
-        pallete_raw[26, :] = [255,   0,   0]
-        pallete_raw[27, :] = [  0,   0, 142]
-        pallete_raw[28, :] = [  0,   0,  70]
-        pallete_raw[29, :] = [  0,  60, 100]
-        pallete_raw[30, :] = [  0,   0,  90]
-        pallete_raw[31, :] = [  0,   0, 110]
-        pallete_raw[32, :] = [  0,  80, 100]
-        pallete_raw[33, :] = [  0,   0, 230]
-        pallete_raw[34, :] = [119,  11,  32]
+        pallete_raw[24, :] = [70, 130, 180]
+        pallete_raw[25, :] = [220, 20, 60]
+        pallete_raw[26, :] = [255, 0, 0]
+        pallete_raw[27, :] = [0, 0, 142]
+        pallete_raw[28, :] = [0, 0, 70]
+        pallete_raw[29, :] = [0, 60, 100]
+        pallete_raw[30, :] = [0, 0, 90]
+        pallete_raw[31, :] = [0, 0, 110]
+        pallete_raw[32, :] = [0, 80, 100]
+        pallete_raw[33, :] = [0, 0, 230]
+        pallete_raw[34, :] = [119, 11, 32]
 
         train2regular = [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33]
 
         for i in range(len(train2regular)):
-            pallete[i, :] = pallete_raw[train2regular[i]+1, :]
+            pallete[i, :] = pallete_raw[train2regular[i] + 1, :]
 
         pallete = pallete.reshape(-1)
 
         return pallete
 
-    def evaluate_segmentations(self, pred_segmentations = None):
+    def evaluate_segmentations(self, pred_segmentations=None):
         """
         top level evaluations
         :param pred_segmentations: the pred segmentation result
@@ -180,7 +185,6 @@ class CityScape(IMDB):
 
         info = self._py_evaluate_segmentation()
         return info
-
 
     def get_confusion_matrix(self, gt_label, pred_label, class_num):
         """
@@ -209,7 +213,7 @@ class CityScape(IMDB):
         """
         res_file_folder = os.path.join(self.result_path, 'results')
 
-        confusion_matrix = np.zeros((self.num_classes,self.num_classes))
+        confusion_matrix = np.zeros((self.num_classes, self.num_classes))
         for i, index in enumerate(self.image_set_index):
             seg_gt_info = self.load_segdb_from_index(index)
 
@@ -222,7 +226,7 @@ class CityScape(IMDB):
             res_save_path = os.path.join(res_save_folder, res_image_name + '.png')
 
             seg_pred = np.array(Image.open(res_save_path)).astype('float32')
-            #seg_pred = np.squeeze(pred_segmentations[i])
+            # seg_pred = np.squeeze(pred_segmentations[i])
 
             seg_pred = cv2.resize(seg_pred, (seg_gt.shape[1], seg_gt.shape[0]), interpolation=cv2.INTER_NEAREST)
             ignore_index = seg_gt != 255
@@ -238,7 +242,7 @@ class CityScape(IMDB):
         IU_array = (tp / np.maximum(1.0, pos + res - tp))
         mean_IU = IU_array.mean()
 
-        return {'meanIU':mean_IU, 'IU_array':IU_array}
+        return {'meanIU': mean_IU, 'IU_array': IU_array}
 
     def write_segmentation_result(self, segmentation_results):
         """
@@ -268,4 +272,3 @@ class CityScape(IMDB):
             segmentation_result = Image.fromarray(segmentation_result)
             segmentation_result.putpalette(pallete)
             segmentation_result.save(res_save_path)
-

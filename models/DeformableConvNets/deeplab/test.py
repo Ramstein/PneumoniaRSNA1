@@ -11,14 +11,13 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import _init_paths
-
 import argparse
 import os
 import sys
 import time
 import logging
 from config.config import config, update_config
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test a Deeplab Network')
@@ -35,6 +34,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
@@ -46,9 +46,9 @@ from symbols import *
 from dataset import *
 from core.loader import TestDataLoader
 from core.tester import Predictor, pred_eval
-from utils.load_data import load_gt_segdb, merge_segdb
 from utils.load_model import load_param
 from utils.create_logger import create_logger
+
 
 def test_deeplab():
     epoch = config.TEST.test_epoch
@@ -59,7 +59,8 @@ def test_deeplab():
     dataset_path = config.dataset.dataset_path
 
     logger, final_output_path = create_logger(config.output_path, args.cfg, image_set)
-    prefix = os.path.join(final_output_path, '..', '_'.join([iset for iset in config.dataset.image_set.split('+')]), config.TRAIN.model_prefix)
+    prefix = os.path.join(final_output_path, '..', '_'.join([iset for iset in config.dataset.image_set.split('+')]),
+                          config.TRAIN.model_prefix)
 
     # print config
     pprint.pprint(config)
@@ -98,8 +99,10 @@ def test_deeplab():
     # start detection
     pred_eval(predictor, test_data, imdb, vis=args.vis, ignore_cache=args.ignore_cache, logger=logger)
 
+
 def main():
-    print args
+    print
+    args
     test_deeplab()
 
 

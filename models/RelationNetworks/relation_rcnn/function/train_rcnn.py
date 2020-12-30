@@ -11,21 +11,19 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import argparse
 import logging
 import pprint
-import os
+
 import mxnet as mx
 import numpy as np
-
-from symbols import *
+from bbox.bbox_regression import add_bbox_regression_targets
 from core import callback, metric
 from core.loader import ROIIter
 from core.module import MutableModule
-from bbox.bbox_regression import add_bbox_regression_targets
+from symbols import *
+from utils.PrefetchingIter import PrefetchingIterV2 as PrefetchingIter
 from utils.load_data import load_proposal_roidb, merge_roidb, filter_roidb
 from utils.load_model import load_param
-from utils.PrefetchingIter import PrefetchingIterV2 as PrefetchingIter
 from utils.lr_scheduler import WarmupMultiFactorScheduler
 
 
@@ -99,8 +97,8 @@ def train_rcnn(cfg, dataset, image_set, root_path, dataset_path,
     else:
         max_data_shape.append(('rois', (cfg.TEST.PROPOSAL_POST_NMS_TOP_N + 30, 5)))
 
-    #dot = mx.viz.plot_network(sym, node_attrs={'shape': 'rect', 'fixedsize': 'false'})
-    #dot.render(os.path.join('./output/rcnn/network_vis', cfg.symbol + cfg.TRAIN.model_prefix))
+    # dot = mx.viz.plot_network(sym, node_attrs={'shape': 'rect', 'fixedsize': 'false'})
+    # dot.render(os.path.join('./output/rcnn/network_vis', cfg.symbol + cfg.TRAIN.model_prefix))
 
     # load and initialize params
     if resume:
@@ -180,4 +178,3 @@ def train_rcnn(cfg, dataset, image_set, root_path, dataset_path,
             batch_end_callback=batch_end_callback, kvstore=kvstore,
             optimizer='sgd', optimizer_params=optimizer_params,
             arg_params=arg_params, aux_params=aux_params, begin_epoch=begin_epoch, num_epoch=end_epoch)
-

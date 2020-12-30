@@ -5,8 +5,8 @@
 # Written by Yuwen Xiong
 # --------------------------------------------------------
 
-import numpy as np
 import cv2
+import numpy as np
 
 
 def resize(im, target_size, max_size):

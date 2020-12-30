@@ -5,14 +5,15 @@
 # Written by Yi Li, Haochen Zhang
 # --------------------------------------------------------
 
-import _init_paths
 import os
-import sys
 import pprint
+import sys
+
 import cv2
+import numpy as np
 from config.config import config, update_config
 from utils.image import resize, transform
-import numpy as np
+
 # get config
 os.environ['PYTHONUNBUFFERED'] = '1'
 os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
@@ -26,6 +27,7 @@ from core.tester import Predictor
 from symbols import *
 from utils.load_model import load_param
 from utils.show_offset import show_dconv_offset
+
 
 def main():
     # get symbol
@@ -76,6 +78,7 @@ def main():
         im = image_all[idx]
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         show_dconv_offset(im, [res5c_offset, res5b_offset, res5a_offset])
+
 
 if __name__ == '__main__':
     main()

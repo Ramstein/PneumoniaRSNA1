@@ -15,13 +15,9 @@
 Proposal Target Operator selects foreground and background roi and assigns label, bbox_transform to them.
 """
 
+import cPickle
 import mxnet as mx
 import numpy as np
-from distutils.util import strtobool
-from easydict import EasyDict as edict
-import cPickle
-
-
 from core.rcnn import sample_rois, sample_rois_v2
 
 DEBUG = False
@@ -60,7 +56,6 @@ class ProposalTargetOperator(mx.operator.CustomOp):
             rois_per_image = self._batch_rois / self._batch_images
             fg_rois_per_image = np.round(self._fg_fraction * rois_per_image).astype(int)
 
-
         # Include ground-truth boxes in the set of candidate rois
         zeros = np.zeros((gt_boxes.shape[0], 1), dtype=gt_boxes.dtype)
         if self._batch_rois >= -1:
@@ -69,25 +64,33 @@ class ProposalTargetOperator(mx.operator.CustomOp):
         assert np.all(all_rois[:, 0] == 0), 'Only single item batches are supported'
 
         if self._batch_rois == -1 or self._batch_rois == -2:
-            #rois, labels, bbox_targets, bbox_weights = \
+            # rois, labels, bbox_targets, bbox_weights = \
             #    sample_rois(all_rois, fg_rois_per_image, rois_per_image, self._num_classes, self._cfg, gt_boxes=gt_boxes)
             rois, labels, bbox_targets, bbox_weights = \
                 sample_rois_v2(all_rois, self._num_classes, self._cfg, gt_boxes=gt_boxes)
         else:
             rois, labels, bbox_targets, bbox_weights = \
-                sample_rois(all_rois, fg_rois_per_image, rois_per_image, self._num_classes, self._cfg, gt_boxes=gt_boxes)
+                sample_rois(all_rois, fg_rois_per_image, rois_per_image, self._num_classes, self._cfg,
+                            gt_boxes=gt_boxes)
 
         if DEBUG:
-            print "labels=", labels
-            print 'num fg: {}'.format((labels > 0).sum())
-            print 'num bg: {}'.format((labels == 0).sum())
+            print
+            "labels=", labels
+            print
+            'num fg: {}'.format((labels > 0).sum())
+            print
+            'num bg: {}'.format((labels == 0).sum())
             self._count += 1
             self._fg_num += (labels > 0).sum()
             self._bg_num += (labels == 0).sum()
-            print "self._count=", self._count
-            print 'num fg avg: {}'.format(self._fg_num / self._count)
-            print 'num bg avg: {}'.format(self._bg_num / self._count)
-            print 'ratio: {:.3f}'.format(float(self._fg_num) / float(self._bg_num))
+            print
+            "self._count=", self._count
+            print
+            'num fg avg: {}'.format(self._fg_num / self._count)
+            print
+            'num bg avg: {}'.format(self._bg_num / self._count)
+            print
+            'ratio: {:.3f}'.format(float(self._fg_num) / float(self._bg_num))
 
         for ind, val in enumerate([rois, labels, bbox_targets, bbox_weights]):
             self.assign(out_data[ind], req[ind], val)
@@ -126,10 +129,10 @@ class ProposalTargetProp(mx.operator.CustomOpProp):
         else:
             rois = self._batch_rois
 
-        #rois = rpn_rois_shape[0] + gt_boxes_shape[0] if self._batch_rois == -1 else self._batch_rois
+        # rois = rpn_rois_shape[0] + gt_boxes_shape[0] if self._batch_rois == -1 else self._batch_rois
 
         output_rois_shape = (rois, 5)
-        label_shape = (rois, )
+        label_shape = (rois,)
         bbox_target_shape = (rois, self._num_classes * 4)
         bbox_weight_shape = (rois, self._num_classes * 4)
 
@@ -137,7 +140,8 @@ class ProposalTargetProp(mx.operator.CustomOpProp):
                [output_rois_shape, label_shape, bbox_target_shape, bbox_weight_shape]
 
     def create_operator(self, ctx, shapes, dtypes):
-        return ProposalTargetOperator(self._num_classes, self._batch_images, self._batch_rois, self._cfg, self._fg_fraction)
+        return ProposalTargetOperator(self._num_classes, self._batch_images, self._batch_rois, self._cfg,
+                                      self._fg_fraction)
 
     def declare_backward_dependency(self, out_grad, in_data, out_data):
         return []

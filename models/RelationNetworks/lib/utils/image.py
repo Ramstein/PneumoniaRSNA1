@@ -6,10 +6,11 @@
 # --------------------------------------------------------
 
 
-import numpy as np
 import os
-import cv2
 import random
+
+import cv2
+import numpy as np
 from PIL import Image
 from bbox.bbox_transform import clip_boxes
 
@@ -31,7 +32,7 @@ def get_image(roidb, config):
     for i in range(num_images):
         roi_rec = roidb[i]
         assert os.path.exists(roi_rec['image']), '%s does not exist'.format(roi_rec['image'])
-        im = cv2.imread(roi_rec['image'], cv2.IMREAD_COLOR|cv2.IMREAD_IGNORE_ORIENTATION)
+        im = cv2.imread(roi_rec['image'], cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
         if roidb[i]['flipped']:
             im = im[:, ::-1, :]
         new_rec = roi_rec.copy()
@@ -85,7 +86,8 @@ def get_segmentation_image(segdb, config):
 
     return processed_ims, processed_seg_cls_gt, processed_segdb
 
-def resize(im, target_size, max_size, stride=0, interpolation = cv2.INTER_LINEAR):
+
+def resize(im, target_size, max_size, stride=0, interpolation=cv2.INTER_LINEAR):
     """
     only resize input image to target size and return scale
     :param im: BGR image input by opencv
@@ -115,6 +117,7 @@ def resize(im, target_size, max_size, stride=0, interpolation = cv2.INTER_LINEAR
         padded_im[:im.shape[0], :im.shape[1], :] = im
         return padded_im, im_scale
 
+
 def transform(im, pixel_means):
     """
     transform into mxnet tensor
@@ -128,6 +131,7 @@ def transform(im, pixel_means):
         im_tensor[0, i, :, :] = im[:, :, 2 - i] - pixel_means[2 - i]
     return im_tensor
 
+
 def transform_seg_gt(gt):
     """
     transform segmentation gt image into mxnet tensor
@@ -138,6 +142,7 @@ def transform_seg_gt(gt):
     gt_tensor[0, 0, :, :] = gt[:, :]
 
     return gt_tensor
+
 
 def transform_inverse(im_tensor, pixel_means):
     """
@@ -157,6 +162,7 @@ def transform_inverse(im_tensor, pixel_means):
     im += pixel_means[[2, 1, 0]]
     im = im.astype(np.uint8)
     return im
+
 
 def tensor_vstack(tensor_list, pad=0):
     """
@@ -181,16 +187,16 @@ def tensor_vstack(tensor_list, pad=0):
         all_tensor = np.full(tuple(dimensions), pad, dtype=dtype)
     if ndim == 1:
         for ind, tensor in enumerate(tensor_list):
-            all_tensor[ind*islice:(ind+1)*islice] = tensor
+            all_tensor[ind * islice:(ind + 1) * islice] = tensor
     elif ndim == 2:
         for ind, tensor in enumerate(tensor_list):
-            all_tensor[ind*islice:(ind+1)*islice, :tensor.shape[1]] = tensor
+            all_tensor[ind * islice:(ind + 1) * islice, :tensor.shape[1]] = tensor
     elif ndim == 3:
         for ind, tensor in enumerate(tensor_list):
-            all_tensor[ind*islice:(ind+1)*islice, :tensor.shape[1], :tensor.shape[2]] = tensor
+            all_tensor[ind * islice:(ind + 1) * islice, :tensor.shape[1], :tensor.shape[2]] = tensor
     elif ndim == 4:
         for ind, tensor in enumerate(tensor_list):
-            all_tensor[ind*islice:(ind+1)*islice, :tensor.shape[1], :tensor.shape[2], :tensor.shape[3]] = tensor
+            all_tensor[ind * islice:(ind + 1) * islice, :tensor.shape[1], :tensor.shape[2], :tensor.shape[3]] = tensor
     else:
         raise Exception('Sorry, unimplemented.')
     return all_tensor

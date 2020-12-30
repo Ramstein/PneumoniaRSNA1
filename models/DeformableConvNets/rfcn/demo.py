@@ -5,17 +5,16 @@
 # Written by Yi Li, Haochen Zhang
 # --------------------------------------------------------
 
-import _init_paths
-
 import argparse
 import os
-import sys
-import logging
 import pprint
+import sys
+
 import cv2
+import numpy as np
 from config.config import config, update_config
 from utils.image import resize, transform
-import numpy as np
+
 # get config
 os.environ['PYTHONUNBUFFERED'] = '1'
 os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
@@ -30,17 +29,21 @@ from symbols import *
 from utils.load_model import load_param
 from utils.show_boxes import show_boxes
 from utils.tictoc import tic, toc
-from nms.nms import py_nms_wrapper, cpu_nms_wrapper, gpu_nms_wrapper
+from nms.nms import gpu_nms_wrapper
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Show Deformable ConvNets demo')
     # general
-    parser.add_argument('--rfcn_only', help='whether use R-FCN only (w/o Deformable ConvNets)', default=False, action='store_true')
+    parser.add_argument('--rfcn_only', help='whether use R-FCN only (w/o Deformable ConvNets)', default=False,
+                        action='store_true')
 
     args = parser.parse_args()
     return args
 
+
 args = parse_args()
+
 
 def main():
     # get symbol
@@ -74,7 +77,6 @@ def main():
         im_info = np.array([[im_tensor.shape[2], im_tensor.shape[3], im_scale]], dtype=np.float32)
         data.append({'data': im_tensor, 'im_info': im_info})
 
-
     # get predictor
     data_names = ['data', 'im_info']
     label_names = []
@@ -82,7 +84,8 @@ def main():
     max_data_shape = [[('data', (1, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]]
     provide_data = [[(k, v.shape) for k, v in zip(data_names, data[i])] for i in xrange(len(data))]
     provide_label = [None for i in xrange(len(data))]
-    arg_params, aux_params = load_param(cur_path + '/../model/' + ('rfcn_dcn_coco' if not args.rfcn_only else 'rfcn_coco'), 0, process=True)
+    arg_params, aux_params = load_param(
+        cur_path + '/../model/' + ('rfcn_dcn_coco' if not args.rfcn_only else 'rfcn_coco'), 0, process=True)
     predictor = Predictor(sym, data_names, label_names,
                           context=[mx.gpu(0)], max_data_shapes=max_data_shape,
                           provide_data=provide_data, provide_label=provide_label,
@@ -117,13 +120,16 @@ def main():
             cls_dets = cls_dets[keep, :]
             cls_dets = cls_dets[cls_dets[:, -1] > 0.7, :]
             dets_nms.append(cls_dets)
-        print 'testing {} {:.4f}s'.format(im_name, toc())
+        print
+        'testing {} {:.4f}s'.format(im_name, toc())
         # visualize
         im = cv2.imread(cur_path + '/../demo/' + im_name)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         show_boxes(im, dets_nms, classes, 1)
 
-    print 'done'
+    print
+    'done'
+
 
 if __name__ == '__main__':
     main()

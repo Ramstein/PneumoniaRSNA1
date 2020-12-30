@@ -11,13 +11,11 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import numpy as np
 import mxnet as mx
+import numpy as np
 from mxnet.executor_manager import _split_input_slice
-
-from config.config import config
-from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_pyramid_anchor
 from rcnn import get_rcnn_testbatch
+from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_pyramid_anchor
 
 
 def par_assign_anchor_wrapper(cfg, iroidb, feat_sym, feat_strides, anchor_scales, anchor_ratios, allowed_border):
@@ -97,8 +95,8 @@ class TestLoader(mx.io.DataIter):
             self.get_batch()
             self.cur += self.batch_size
             return self.im_info, mx.io.DataBatch(data=self.data, label=self.label,
-                                   pad=self.getpad(), index=self.getindex(),
-                                   provide_data=self.provide_data, provide_label=self.provide_label)
+                                                 pad=self.getpad(), index=self.getindex(),
+                                                 provide_data=self.provide_data, provide_label=self.provide_label)
         else:
             raise StopIteration
 
@@ -134,14 +132,11 @@ class TestLoader(mx.io.DataIter):
         self.im_info = im_info
 
 
-
-
-
 class PyramidAnchorIterator(mx.io.DataIter):
 
     # pool = Pool(processes=4)
     def __init__(self, feat_sym, roidb, cfg, batch_size=1, shuffle=False, ctx=None, work_load_list=None,
-                 feat_strides=(4, 8, 16, 32, 64), anchor_scales=(8, ), anchor_ratios=(0.5, 1, 2), allowed_border=0,
+                 feat_strides=(4, 8, 16, 32, 64), anchor_scales=(8,), anchor_ratios=(0.5, 1, 2), allowed_border=0,
                  aspect_grouping=False):
         """
         This Iter will provide roi data to Fast R-CNN network

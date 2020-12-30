@@ -11,15 +11,13 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import argparse
-import pprint
 import logging
-import mxnet as mx
+import pprint
 
-from symbols import *
-from dataset import *
 from core.loader import TestLoader
 from core.tester import Predictor, generate_proposals
+from dataset import *
+from symbols import *
 from utils.load_model import load_param
 
 

@@ -5,15 +5,17 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 
-import cPickle
 import math
+
 import mxnet as mx
-from utils.symbol import Symbol
-from operator_py.proposal import *
 from operator_py.box_annotator_ohem import *
-from operator_py.nms_multi_target import *
 from operator_py.learn_nms import *
+from operator_py.nms_multi_target import *
+from operator_py.proposal import *
 from resnet_v1_101_rcnn_learn_nms_base import resnet_v1_101_rcnn_learn_nms_base as NMS_UTILS
+from utils.symbol import Symbol
+
+
 # from operator_py.monitor_op import monitor_wrapper
 
 
@@ -183,16 +185,16 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
         res3b3_branch2a_relu = mx.symbol.Activation(name='res3b3_branch2a_relu', data=scale3b3_branch2a,
                                                     act_type='relu')
 
-        #res3b3_branch2b_offset = mx.symbol.Convolution(name='res3b3_branch2b_offset', data=res3b3_branch2a_relu,
+        # res3b3_branch2b_offset = mx.symbol.Convolution(name='res3b3_branch2b_offset', data=res3b3_branch2a_relu,
         #                                               num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
-        #res3b3_branch2b = mx.contrib.symbol.DeformableConvolution(name='res3b3_branch2b', data=res3b3_branch2a_relu,
+        # res3b3_branch2b = mx.contrib.symbol.DeformableConvolution(name='res3b3_branch2b', data=res3b3_branch2a_relu,
         #                                                          offset=res3b3_branch2b_offset,
         #                                                          num_filter=128, pad=(1, 1), kernel=(3, 3),
         #                                                          num_deformable_group=4,
         #                                                          stride=(1, 1), no_bias=True)
 
         res3b3_branch2b = mx.symbol.Convolution(name='res3b3_branch2b', data=res3b3_branch2a_relu, num_filter=128,
-                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
+                                                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
         bn3b3_branch2b = mx.symbol.BatchNorm(name='bn3b3_branch2b', data=res3b3_branch2b, use_global_stats=True,
                                              fix_gamma=False, eps=eps)
         scale3b3_branch2b = bn3b3_branch2b
@@ -681,7 +683,7 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
                                                      act_type='relu')
 
         res4b22_branch2b = mx.symbol.Convolution(name='res4b22_branch2b', data=res4b22_branch2a_relu, num_filter=256,
-                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
+                                                 pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
 
         # res4b22_branch2b_offset = mx.symbol.Convolution(name='res4b22_branch2b_offset', data=res4b22_branch2a_relu,
         #                                                 num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
@@ -716,8 +718,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=eps)
         scale5a_branch2a = bn5a_branch2a
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
-        res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512, pad=(1, 1),
-                kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # deconv 5a
         # res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
@@ -746,8 +749,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=eps)
         scale5b_branch2a = bn5b_branch2a
         res5b_branch2a_relu = mx.symbol.Activation(name='res5b_branch2a_relu', data=scale5b_branch2a, act_type='relu')
-        res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512, pad=(1, 1),
-               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # dconv 5b
         # res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu,
@@ -776,8 +780,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
                                             fix_gamma=False, eps=eps)
         scale5c_branch2a = bn5c_branch2a
         res5c_branch2a_relu = mx.symbol.Activation(name='res5c_branch2a_relu', data=scale5c_branch2a, act_type='relu')
-        res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512, pad=(1, 1),
-               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu,
         #                                               num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
@@ -1002,7 +1007,7 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
         # position_embedding, [num_fg_classes, num_rois, num_rois, fc_dim[0]]
         position_embedding = NMS_UTILS.extract_pairwise_multi_position_embedding(position_mat, fc_dim[0])
         # [num_fg_classes * num_rois * num_rois, fc_dim[0]]
-        position_embedding_reshape =  mx.sym.Reshape(position_embedding, shape=(-1, fc_dim[0]))
+        position_embedding_reshape = mx.sym.Reshape(position_embedding, shape=(-1, fc_dim[0]))
         # position_feat_1, [num_fg_classes * num_rois * num_rois, fc_dim[1]]
         position_feat_1 = mx.sym.FullyConnected(name='nms_pair_pos_fc1_' + str(index),
                                                 data=position_embedding_reshape,
@@ -1037,7 +1042,7 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
         # [num_fg_classes * fc_dim[1], num_rois, num_rois]
         aff_weight_reshape = mx.sym.Reshape(aff_weight, shape=(-3, -2))
         # weighted_aff, [num_fg_classes * fc_dim[1], num_rois, num_rois]
-        weighted_aff= mx.sym.log(mx.sym.maximum(left=aff_weight_reshape, right=1e-6)) + aff_scale
+        weighted_aff = mx.sym.log(mx.sym.maximum(left=aff_weight_reshape, right=1e-6)) + aff_scale
         # aff_softmax, [num_fg_classes * fc_dim[1], num_rois, num_rois]
         aff_softmax = mx.symbol.softmax(data=weighted_aff, axis=2, name='nms_softmax_' + str(index))
         aff_softmax_reshape = mx.sym.Reshape(aff_softmax, shape=(-1, fc_dim[1] * num_rois, 0))
@@ -1149,7 +1154,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
             bbox_pred = mx.symbol.FullyConnected(name='bbox_pred', data=roi_pool_relu2, num_hidden=num_reg_classes * 4)
 
             if cfg.TRAIN.ENABLE_OHEM:
-                print "Open OHEM"
+                print
+                "Open OHEM"
                 labels_ohem, bbox_weights_ohem = mx.sym.Custom(op_type='BoxAnnotatorOHEM', num_classes=num_classes,
                                                                num_reg_classes=num_reg_classes,
                                                                roi_per_img=cfg.TRAIN.BATCH_ROIS_OHEM,
@@ -1163,7 +1169,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
                                             grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS_OHEM)
                 rcnn_label = labels_ohem
             else:
-                print "Close OHEM"
+                print
+                "Close OHEM"
                 cls_prob = mx.sym.SoftmaxOutput(name='cls_prob', data=cls_score, label=label, normalization='valid',
                                                 use_ignore=True, ignore_label=-1)
                 bbox_loss_ = bbox_weight * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0,
@@ -1198,7 +1205,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
             # reshape output
             cls_prob = mx.symbol.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),
                                          name='cls_prob_reshape')
-            bbox_pred_reshape = mx.symbol.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
+            bbox_pred_reshape = mx.symbol.Reshape(data=bbox_pred,
+                                                  shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
                                                   name='bbox_pred_reshape')
 
             # group output
@@ -1324,38 +1332,37 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
             nms_logit_weight = mx.sym.var('nms_logit_weight', shape=(5, 128), dtype=np.float32)
             nms_logit_bias = mx.sym.var('nms_logit_bias', shape=(5,), dtype=np.float32)
 
-
             learn_nms_params = {
-                'cls_score': cls_score, 
-                'bbox_pred': bbox_pred, 
-                'rois': rois, 
-                'im_info': im_info, 
+                'cls_score': cls_score,
+                'bbox_pred': bbox_pred,
+                'rois': rois,
+                'im_info': im_info,
                 'fc_all_2_relu': roi_pool_relu2,
-                'nms_rank_weight': nms_rank_weight, 
-                'nms_rank_bias': nms_rank_bias, 
+                'nms_rank_weight': nms_rank_weight,
+                'nms_rank_bias': nms_rank_bias,
                 'roi_feat_embedding_weight': roi_feat_embedding_weight,
-                'roi_feat_embedding_bias': roi_feat_embedding_bias, 
-                'nms_pair_pos_fc1_1_weight': nms_pair_pos_fc1_1_weight, 
-                'nms_pair_pos_fc1_1_bias': nms_pair_pos_fc1_1_bias, 
-                'nms_query_1_weight': nms_query_1_weight, 
-                'nms_query_1_bias': nms_query_1_bias, 
-                'nms_key_1_weight': nms_key_1_weight, 
+                'roi_feat_embedding_bias': roi_feat_embedding_bias,
+                'nms_pair_pos_fc1_1_weight': nms_pair_pos_fc1_1_weight,
+                'nms_pair_pos_fc1_1_bias': nms_pair_pos_fc1_1_bias,
+                'nms_query_1_weight': nms_query_1_weight,
+                'nms_query_1_bias': nms_query_1_bias,
+                'nms_key_1_weight': nms_key_1_weight,
                 'nms_key_1_bias': nms_key_1_bias,
-                'nms_linear_out_1_weight': nms_linear_out_1_weight, 
-                'nms_linear_out_1_bias': nms_linear_out_1_bias, 
-                'nms_logit_weight': nms_logit_weight, 
+                'nms_linear_out_1_weight': nms_linear_out_1_weight,
+                'nms_linear_out_1_bias': nms_linear_out_1_bias,
+                'nms_logit_weight': nms_logit_weight,
                 'nms_logit_bias': nms_logit_bias,
-                'op_type': 'learn_nms', 
+                'op_type': 'learn_nms',
                 'name': 'learn_nms',
-                'num_fg_classes': num_fg_classes, 
-                'bbox_means': bbox_means, 
-                'bbox_stds': bbox_stds, 
-                'first_n':first_n, 
-                'class_agnostic': cfg.CLASS_AGNOSTIC, 
-                'num_thresh': num_thresh, 
-                'class_thresh': cfg.TEST.LEARN_NMS_CLASS_SCORE_TH, 
-                'nongt_dim': None, 
-                'has_non_gt_index':(non_gt_index is not None)
+                'num_fg_classes': num_fg_classes,
+                'bbox_means': bbox_means,
+                'bbox_stds': bbox_stds,
+                'first_n': first_n,
+                'class_agnostic': cfg.CLASS_AGNOSTIC,
+                'num_thresh': num_thresh,
+                'class_thresh': cfg.TEST.LEARN_NMS_CLASS_SCORE_TH,
+                'nongt_dim': None,
+                'has_non_gt_index': (non_gt_index is not None)
             }
             if non_gt_index is not None:
                 learn_nms_params['non_gt_index'] = non_gt_index
@@ -1414,7 +1421,7 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
         arg_params['nms_linear_out_' + str(index) + '_bias'] = mx.nd.zeros(
             shape=self.arg_shape_dict['nms_linear_out_' + str(index) + '_bias'])
 
-    def init_weight_nms(self, cfg, arg_params,aux_params):
+    def init_weight_nms(self, cfg, arg_params, aux_params):
         arg_params['nms_rank_weight'] = mx.random.normal(
             0, 0.01, shape=self.arg_shape_dict['nms_rank_weight'])
         arg_params['nms_rank_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['nms_rank_bias'])
@@ -1505,13 +1512,15 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16_lear
             # arg_params['offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_weight'])
             # arg_params['offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_bias'])
 
-            arg_params['roi_pool_fc1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['roi_pool_fc1_weight'])
+            arg_params['roi_pool_fc1_weight'] = mx.random.normal(0, 0.01,
+                                                                 shape=self.arg_shape_dict['roi_pool_fc1_weight'])
             arg_params['roi_pool_fc1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['roi_pool_fc1_bias'])
-            arg_params['roi_pool_fc2_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['roi_pool_fc2_weight'])
+            arg_params['roi_pool_fc2_weight'] = mx.random.normal(0, 0.01,
+                                                                 shape=self.arg_shape_dict['roi_pool_fc2_weight'])
             arg_params['roi_pool_fc2_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['roi_pool_fc2_bias'])
             self.init_fpn_weight(cfg, arg_params, aux_params, has_ft64=False)
             for idx in range(2):
-                self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx+1)
+                self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx + 1)
 
         # init learn nms
         self.init_weight_nms(cfg, arg_params, aux_params)

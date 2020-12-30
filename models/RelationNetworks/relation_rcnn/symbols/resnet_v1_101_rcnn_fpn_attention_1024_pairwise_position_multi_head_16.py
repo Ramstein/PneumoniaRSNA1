@@ -5,12 +5,14 @@
 # Written by Jiayuan Gu, Dazhi Cheng
 # --------------------------------------------------------
 
-import cPickle
 import math
+
 import mxnet as mx
-from utils.symbol import Symbol
-from operator_py.proposal import *
 from operator_py.box_annotator_ohem import *
+from operator_py.proposal import *
+from utils.symbol import Symbol
+
+
 # from operator_py.monitor_op import monitor_wrapper
 
 
@@ -180,16 +182,16 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
         res3b3_branch2a_relu = mx.symbol.Activation(name='res3b3_branch2a_relu', data=scale3b3_branch2a,
                                                     act_type='relu')
 
-        #res3b3_branch2b_offset = mx.symbol.Convolution(name='res3b3_branch2b_offset', data=res3b3_branch2a_relu,
+        # res3b3_branch2b_offset = mx.symbol.Convolution(name='res3b3_branch2b_offset', data=res3b3_branch2a_relu,
         #                                               num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
-        #res3b3_branch2b = mx.contrib.symbol.DeformableConvolution(name='res3b3_branch2b', data=res3b3_branch2a_relu,
+        # res3b3_branch2b = mx.contrib.symbol.DeformableConvolution(name='res3b3_branch2b', data=res3b3_branch2a_relu,
         #                                                          offset=res3b3_branch2b_offset,
         #                                                          num_filter=128, pad=(1, 1), kernel=(3, 3),
         #                                                          num_deformable_group=4,
         #                                                          stride=(1, 1), no_bias=True)
 
         res3b3_branch2b = mx.symbol.Convolution(name='res3b3_branch2b', data=res3b3_branch2a_relu, num_filter=128,
-                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
+                                                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
         bn3b3_branch2b = mx.symbol.BatchNorm(name='bn3b3_branch2b', data=res3b3_branch2b, use_global_stats=True,
                                              fix_gamma=False, eps=eps)
         scale3b3_branch2b = bn3b3_branch2b
@@ -678,7 +680,7 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
                                                      act_type='relu')
 
         res4b22_branch2b = mx.symbol.Convolution(name='res4b22_branch2b', data=res4b22_branch2a_relu, num_filter=256,
-                pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
+                                                 pad=(1, 1), kernel=(3, 3), stride=(1, 1), no_bias=True)
 
         # res4b22_branch2b_offset = mx.symbol.Convolution(name='res4b22_branch2b_offset', data=res4b22_branch2a_relu,
         #                                                 num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
@@ -713,8 +715,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
                                             fix_gamma=False, eps=eps)
         scale5a_branch2a = bn5a_branch2a
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
-        res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512, pad=(1, 1),
-                kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5a_branch2b = mx.symbol.Convolution(name='res5a_branch2b', data=res5a_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # deconv 5a
         # res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
@@ -743,8 +746,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
                                             fix_gamma=False, eps=eps)
         scale5b_branch2a = bn5b_branch2a
         res5b_branch2a_relu = mx.symbol.Activation(name='res5b_branch2a_relu', data=scale5b_branch2a, act_type='relu')
-        res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512, pad=(1, 1),
-               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5b_branch2b = mx.symbol.Convolution(name='res5b_branch2b', data=res5b_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # dconv 5b
         # res5b_branch2b_offset = mx.symbol.Convolution(name='res5b_branch2b_offset', data=res5b_branch2a_relu,
@@ -773,8 +777,9 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
                                             fix_gamma=False, eps=eps)
         scale5c_branch2a = bn5c_branch2a
         res5c_branch2a_relu = mx.symbol.Activation(name='res5c_branch2a_relu', data=scale5c_branch2a, act_type='relu')
-        res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512, pad=(1, 1),
-               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
+        res5c_branch2b = mx.symbol.Convolution(name='res5c_branch2b', data=res5c_branch2a_relu, num_filter=512,
+                                               pad=(1, 1),
+                                               kernel=(3, 3), stride=(1, 1), no_bias=True, cudnn_off=True)
 
         # res5c_branch2b_offset = mx.symbol.Convolution(name='res5c_branch2b_offset', data=res5c_branch2a_relu,
         #                                               num_filter=72, pad=(1, 1), kernel=(3, 3), stride=(1, 1))
@@ -1061,7 +1066,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
             bbox_pred = mx.symbol.FullyConnected(name='bbox_pred', data=roi_pool_relu2, num_hidden=num_reg_classes * 4)
 
             if cfg.TRAIN.ENABLE_OHEM:
-                print "Open OHEM"
+                print
+                "Open OHEM"
                 labels_ohem, bbox_weights_ohem = mx.sym.Custom(op_type='BoxAnnotatorOHEM', num_classes=num_classes,
                                                                num_reg_classes=num_reg_classes,
                                                                roi_per_img=cfg.TRAIN.BATCH_ROIS_OHEM,
@@ -1075,7 +1081,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
                                             grad_scale=1.0 / cfg.TRAIN.BATCH_ROIS_OHEM)
                 rcnn_label = labels_ohem
             else:
-                print "Close OHEM"
+                print
+                "Close OHEM"
                 cls_prob = mx.sym.SoftmaxOutput(name='cls_prob', data=cls_score, label=label, normalization='valid',
                                                 use_ignore=True, ignore_label=-1)
                 bbox_loss_ = bbox_weight * mx.sym.smooth_l1(name='bbox_loss_', scalar=1.0,
@@ -1110,7 +1117,8 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
             # reshape output
             cls_prob = mx.symbol.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),
                                          name='cls_prob_reshape')
-            bbox_pred_reshape = mx.symbol.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
+            bbox_pred_reshape = mx.symbol.Reshape(data=bbox_pred,
+                                                  shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
                                                   name='bbox_pred_reshape')
 
             # group output
@@ -1202,4 +1210,4 @@ class resnet_v1_101_rcnn_fpn_attention_1024_pairwise_position_multi_head_16(Symb
         arg_params['roi_pool_fc2_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['roi_pool_fc2_bias'])
         self.init_fpn_weight(cfg, arg_params, aux_params, has_ft64=False)
         for idx in range(2):
-            self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx+1)
+            self.init_weight_attention_multi_head(cfg, arg_params, aux_params, index=idx + 1)

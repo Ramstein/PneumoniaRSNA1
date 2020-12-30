@@ -11,8 +11,9 @@
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
 
-import time
 import logging
+import time
+
 import mxnet as mx
 
 
@@ -58,4 +59,5 @@ def do_checkpoint(prefix, means, stds):
         mx.model.save_checkpoint(prefix, iter_no + 1, sym, arg, aux)
         arg.pop('bbox_pred_weight_test')
         arg.pop('bbox_pred_bias_test')
+
     return _callback

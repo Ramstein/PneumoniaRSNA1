@@ -10,16 +10,14 @@
 # Licence under The Apache 2.0 License
 # https://github.com/ijkguo/mx-rcnn/
 # --------------------------------------------------------
-import _init_paths
 
-import cv2
-import time
 import argparse
-import logging
-import pprint
 import os
+import pprint
 import sys
+
 from config.config import config, update_config
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN network')
@@ -34,6 +32,7 @@ def parse_args():
     parser.add_argument('--frequent', help='frequency of logging', default=config.default.frequent, type=int)
     args = parser.parse_args()
     return args
+
 
 args = parse_args()
 curr_path = os.path.abspath(os.path.dirname(__file__))
@@ -81,15 +80,18 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     roidb = filter_roidb(roidb, config)
 
     # load training data
-    train_data = AnchorLoader(feat_sym, roidb, config, batch_size=input_batch_size, shuffle=config.TRAIN.SHUFFLE, ctx=ctx,
+    train_data = AnchorLoader(feat_sym, roidb, config, batch_size=input_batch_size, shuffle=config.TRAIN.SHUFFLE,
+                              ctx=ctx,
                               feat_stride=config.network.RPN_FEAT_STRIDE, anchor_scales=config.network.ANCHOR_SCALES,
                               anchor_ratios=config.network.ANCHOR_RATIOS, aspect_grouping=config.TRAIN.ASPECT_GROUPING)
 
     # infer max shape
-    max_data_shape = [('data', (config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
+    max_data_shape = [('data', (
+    config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
     max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape)
     max_data_shape.append(('gt_boxes', (config.TRAIN.BATCH_IMAGES, 100, 5)))
-    print 'providing maximum shape', max_data_shape, max_label_shape
+    print
+    'providing maximum shape', max_data_shape, max_label_shape
 
     data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
     pprint.pprint(data_shape_dict)
@@ -113,10 +115,11 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     mod = MutableModule(sym, data_names=data_names, label_names=label_names,
                         logger=logger, context=ctx, max_data_shapes=[max_data_shape for _ in range(batch_size)],
-                        max_label_shapes=[max_label_shape for _ in range(batch_size)], fixed_param_prefix=fixed_param_prefix)
+                        max_label_shapes=[max_label_shape for _ in range(batch_size)],
+                        fixed_param_prefix=fixed_param_prefix)
 
     if config.TRAIN.RESUME:
-        mod._preload_opt_states = '%s-%04d.states'%(prefix, begin_epoch)
+        mod._preload_opt_states = '%s-%04d.states' % (prefix, begin_epoch)
 
     # decide training params
     # metric
@@ -134,7 +137,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     batch_end_callback = callback.Speedometer(train_data.batch_size, frequent=args.frequent)
     means = np.tile(np.array(config.TRAIN.BBOX_MEANS), 2 if config.CLASS_AGNOSTIC else config.dataset.NUM_CLASSES)
     stds = np.tile(np.array(config.TRAIN.BBOX_STDS), 2 if config.CLASS_AGNOSTIC else config.dataset.NUM_CLASSES)
-    epoch_end_callback = [mx.callback.module_checkpoint(mod, prefix, period=1, save_optimizer_states=True), callback.do_checkpoint(prefix, means, stds)]
+    epoch_end_callback = [mx.callback.module_checkpoint(mod, prefix, period=1, save_optimizer_states=True),
+                          callback.do_checkpoint(prefix, means, stds)]
     # decide learning rate
     base_lr = lr
     lr_factor = config.TRAIN.lr_factor
@@ -143,7 +147,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
     lr_iters = [int(epoch * len(roidb) / batch_size) for epoch in lr_epoch_diff]
     print('lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters)
-    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr, config.TRAIN.warmup_step)
+    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr,
+                                              config.TRAIN.warmup_step)
     # optimizer
     optimizer_params = {'momentum': config.TRAIN.momentum,
                         'wd': config.TRAIN.wd,
@@ -167,6 +172,7 @@ def main():
     ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
     train_net(args, ctx, config.network.pretrained, config.network.pretrained_epoch, config.TRAIN.model_prefix,
               config.TRAIN.begin_epoch, config.TRAIN.end_epoch, config.TRAIN.lr, config.TRAIN.lr_step)
+
 
 if __name__ == '__main__':
     main()

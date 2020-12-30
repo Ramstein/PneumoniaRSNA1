@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
-
-import numpy as np
 import math
+
+import keras
+import numpy as np
 
 
 class PriorProbability(keras.initializers.Initializer):
