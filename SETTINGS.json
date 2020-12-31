@@ -1,9 +1,9 @@
 {
-  "TRAIN_INFO_DIR": "home/ec2-user/SageMaker/PneumoniaData/",
-  "TEST_INFO_DIR": "home/ec2-user/SageMaker/PneumoniaData/",
-  "RAW_TRAIN_DICOMS_DIR": "home/ec2-user/SageMaker/PneumoniaData/train_dicoms/",
-  "RAW_TEST_DICOMS_DIR": "home/ec2-user/SageMaker/PneumoniaData/test_dicoms/",
-  "TRAIN_IMAGES_CLEAN_DIR": "home/ec2-user/SageMaker/PneumoniaData/train_images/",
-  "TEST_IMAGES_CLEAN_DIR": "home/ec2-user/SageMaker/PneumoniaData/test_images/",
+  "TRAIN_INFO_DIR": "../PneumoniaData/",
+  "TEST_INFO_DIR": "../PneumoniaData/",
+  "RAW_TRAIN_DICOMS_DIR": "../PneumoniaData/train_dicoms/",
+  "RAW_TEST_DICOMS_DIR": "../PneumoniaData/test_dicoms/",
+  "TRAIN_IMAGES_CLEAN_DIR": "../PneumoniaData/train_images/",
+  "TEST_IMAGES_CLEAN_DIR": "../PneumoniaData/test_images/",
   "SUBMISSION_DIR": "."
 }

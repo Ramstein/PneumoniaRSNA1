@@ -6,6 +6,6 @@ scikit-learn==0.20.0
 opencv-python==3.4.1.15
 pydicom==1.2.0
 easydict==1.9
-toposort
-pytest
-networkx
+toposort==1.6
+pytest==6.2.1
+networkx==2.5
