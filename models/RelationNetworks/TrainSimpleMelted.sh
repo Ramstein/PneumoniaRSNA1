@@ -16,3 +16,4 @@ python skpeep/rcnn_end2end_train_test.py --cfg skpeep/unfreeze/cfgs/peepin_fold7
 
 python skpeep/rcnn_end2end_train_test.py --cfg skpeep/unfreeze/cfgs/peepin_fold9_512.yaml
 
+python skpeep/rcnn_end2end_train_test.py --cfg skpeep/unfreeze/cfgs/peepin_fold9_1024.yaml
