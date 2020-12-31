@@ -126,3 +126,7 @@ resize_images_and_save_as_nparray(list_of_images, in_dir, out_dir, 448)
 out_dir = os.path.join(WDIR, "../../", SETTINGS_JSON["TRAIN_IMAGES_CLEAN_DIR"], "resized/i512/")
 list_of_images = subprocess.check_output("ls " + in_dir, shell=True).split()
 resize_images_and_save_as_nparray(list_of_images, in_dir, out_dir, 512)
+
+out_dir = os.path.join(WDIR, "../../", SETTINGS_JSON["TRAIN_IMAGES_CLEAN_DIR"], "resized/i1024/")
+list_of_images = subprocess.check_output("ls " + in_dir, shell=True).split()
+resize_images_and_save_as_nparray(list_of_images, in_dir, out_dir, 1024)
