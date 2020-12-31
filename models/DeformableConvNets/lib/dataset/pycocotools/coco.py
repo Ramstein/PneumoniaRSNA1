@@ -52,12 +52,13 @@ import os
 import time
 import urllib
 
-import mask
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
 from skimage.draw import polygon
+
+import mask
 
 
 class COCO:

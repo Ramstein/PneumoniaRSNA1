@@ -1,19 +1,3 @@
-"""Xception V1 model for Keras.
-
-On ImageNet, this model gets to a top-1 validation accuracy of 0.790
-and a top-5 validation accuracy of 0.945.
-
-Do note that the input image format for this model is different than for
-the VGG16 and ResNet models (299x299 instead of 224x224),
-and that the input preprocessing function
-is also different (same as Inception V3).
-
-# Reference
-
-- [Xception: Deep Learning with Depthwise Separable Convolutions](
-    https://arxiv.org/abs/1610.02357)
-
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

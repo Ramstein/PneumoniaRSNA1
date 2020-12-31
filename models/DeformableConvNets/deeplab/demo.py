@@ -19,8 +19,9 @@ import sys
 import cv2
 import numpy as np
 from PIL import Image
-from config.config import config, update_config
 from utils.image import resize, transform
+
+from config.config import config, update_config
 
 # get config
 os.environ['PYTHONUNBUFFERED'] = '1'
@@ -32,7 +33,6 @@ update_config(cur_path + '/../experiments/deeplab/cfgs/deeplab_cityscapes_demo.y
 sys.path.insert(0, os.path.join(cur_path, '../external/mxnet', config.MXNET_VERSION))
 import mxnet as mx
 from core.tester import Predictor
-from symbols import *
 from utils.load_model import load_param
 from utils.tictoc import tic, toc
 

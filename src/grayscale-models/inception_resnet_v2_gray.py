@@ -1,19 +1,3 @@
-"""Inception-ResNet V2 model for Keras.
-
-Model naming and structure follows TF-slim implementation
-(which has some additional layers and different number of
-filters from the original arXiv paper):
-https://github.com/tensorflow/models/blob/master/research/slim/nets/inception_resnet_v2.py
-
-Pre-trained ImageNet weights are also converted from TF-slim,
-which can be found in:
-https://github.com/tensorflow/models/tree/master/research/slim#pre-trained-models
-
-# Reference
-- [Inception-v4, Inception-ResNet and the Impact of
-   Residual Connections on Learning](https://arxiv.org/abs/1602.07261)
-
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

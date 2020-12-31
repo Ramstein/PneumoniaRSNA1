@@ -1,5 +1,3 @@
-
-
 import mxnet as mx
 
 

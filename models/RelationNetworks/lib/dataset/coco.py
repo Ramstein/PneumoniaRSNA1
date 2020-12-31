@@ -18,8 +18,8 @@ import os
 
 import cPickle
 import numpy as np
-from imdb import IMDB
 
+from imdb import IMDB
 # coco api
 from .pycocotools.coco import COCO
 from .pycocotools.cocoeval import COCOeval

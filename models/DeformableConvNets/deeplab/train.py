@@ -41,7 +41,6 @@ sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VER
 import shutil
 import mxnet as mx
 
-from symbols import *
 from core import callback, metric
 from core.loader import TrainDataLoader
 from core.module import MutableModule

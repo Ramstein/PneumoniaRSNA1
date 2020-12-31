@@ -1,6 +1,3 @@
-
-
-
 import logging
 
 from mxnet.lr_scheduler import LRScheduler

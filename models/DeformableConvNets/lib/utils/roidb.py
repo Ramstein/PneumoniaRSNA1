@@ -1,5 +1,3 @@
-
-
 """
 roidb
 basic format [image_index]['boxes', 'gt_classes', 'gt_overlaps', 'flipped']

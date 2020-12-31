@@ -1,10 +1,3 @@
-# --------------------------------------------------------
-# Relation Networks for Object Detection
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Jiayuan Gu, Dazhi Cheng, Guodong Zhang
-# --------------------------------------------------------
-
 import os
 import sys
 

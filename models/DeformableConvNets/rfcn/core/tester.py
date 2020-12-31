@@ -1,16 +1,3 @@
-# --------------------------------------------------------
-# Deformable Convolutional Networks
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Modified by Yuwen Xiong
-# --------------------------------------------------------
-# Based on:
-# MX-RCNN
-# Copyright (c) 2016 by Contributors
-# Licence under The Apache 2.0 License
-# https://github.com/ijkguo/mx-rcnn/
-# --------------------------------------------------------
-
 import os
 import time
 
@@ -18,10 +5,11 @@ import cPickle
 import mxnet as mx
 import numpy as np
 from bbox.bbox_transform import bbox_pred, clip_boxes
-from module import MutableModule
 from nms.nms import py_nms_wrapper
 from utils import image
 from utils.PrefetchingIter import PrefetchingIter
+
+from module import MutableModule
 
 
 class Predictor(object):

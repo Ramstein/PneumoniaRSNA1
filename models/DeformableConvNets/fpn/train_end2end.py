@@ -42,7 +42,6 @@ import shutil
 import numpy as np
 import mxnet as mx
 
-from symbols import *
 from core.loader import PyramidAnchorIterator
 from core import callback, metric
 from core.module import MutableModule
@@ -95,7 +94,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     # infer max shape
     max_data_shape = [('data', (
-    config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
+        config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
     max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape)
     max_data_shape.append(('gt_boxes', (config.TRAIN.BATCH_IMAGES, 100, 5)))
     print

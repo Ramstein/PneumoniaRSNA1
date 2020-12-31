@@ -14,8 +14,9 @@
 import mxnet as mx
 import numpy as np
 from mxnet.executor_manager import _split_input_slice
-from rcnn import get_rcnn_testbatch
 from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_pyramid_anchor
+
+from rcnn import get_rcnn_testbatch
 
 
 def par_assign_anchor_wrapper(cfg, iroidb, feat_sym, feat_strides, anchor_scales, anchor_ratios, allowed_border):

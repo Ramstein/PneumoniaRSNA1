@@ -5,8 +5,8 @@
 # Written by Yi Li
 # --------------------------------------------------------
 
-import numpy as np
 import cv2
+import numpy as np
 from dataset.pycocotools.mask import encode as encodeMask_c
 
 

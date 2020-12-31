@@ -1,30 +1,16 @@
-# --------------------------------------------------------
-# Deformable Convolutional Networks
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Modified by Yuwen Xiong
-# --------------------------------------------------------
-# Based on:
-# MX-RCNN
-# Copyright (c) 2016 by Contributors
-# Licence under The Apache 2.0 License
-# https://github.com/ijkguo/mx-rcnn/
-# --------------------------------------------------------
+import json
+import multiprocessing as mp
+import os
 
 import cPickle
-import os
-import json
 import numpy as np
+from bbox.bbox_transform import clip_boxes
+from utils.mask_voc2coco import mask_voc2coco
 
 from imdb import IMDB
-
 # coco api
 from .pycocotools.coco import COCO
 from .pycocotools.cocoeval import COCOeval
-from utils.mask_coco2voc import mask_coco2voc
-from utils.mask_voc2coco import mask_voc2coco
-from bbox.bbox_transform import clip_boxes
-import multiprocessing as mp
 
 
 def coco_results_one_category_kernel(data_pack):

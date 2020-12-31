@@ -1,5 +1,6 @@
 # Specify GPU 
-import os, json
+import json
+import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 

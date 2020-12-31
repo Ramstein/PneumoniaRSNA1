@@ -1,5 +1,3 @@
-
-
 """
 Proposal Target Operator selects foreground and background roi and assigns label, bbox_transform to them.
 """

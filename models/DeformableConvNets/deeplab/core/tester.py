@@ -16,8 +16,9 @@ import time
 
 import cPickle
 import mxnet as mx
-from module import MutableModule
 from utils.PrefetchingIter import PrefetchingIter
+
+from module import MutableModule
 
 
 class Predictor(object):

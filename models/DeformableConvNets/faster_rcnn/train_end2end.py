@@ -1,16 +1,3 @@
-# --------------------------------------------------------
-# Deformable Convolutional Networks
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Modified by Yuwen Xiong
-# --------------------------------------------------------
-# Based on:
-# MX-RCNN
-# Copyright (c) 2016 by Contributors
-# Licence under The Apache 2.0 License
-# https://github.com/ijkguo/mx-rcnn/
-# --------------------------------------------------------
-
 import argparse
 import os
 import pprint
@@ -42,7 +29,6 @@ import shutil
 import numpy as np
 import mxnet as mx
 
-from symbols import *
 from core import callback, metric
 from core.loader import AnchorLoader
 from core.module import MutableModule
@@ -87,7 +73,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     # infer max shape
     max_data_shape = [('data', (
-    config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
+        config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
     max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape)
     max_data_shape.append(('gt_boxes', (config.TRAIN.BATCH_IMAGES, 100, 5)))
     print

@@ -18,10 +18,11 @@ import cPickle
 import mxnet as mx
 import numpy as np
 from bbox.bbox_transform import bbox_pred, clip_boxes
-from module import MutableModule
 from nms.nms import py_nms_wrapper, py_softnms_wrapper
 from utils import image
 from utils.PrefetchingIter import PrefetchingIter
+
+from module import MutableModule
 
 
 class Predictor(object):

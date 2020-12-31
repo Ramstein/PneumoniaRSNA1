@@ -1,23 +1,11 @@
-# --------------------------------------------------------
-# Deformable Convolutional Networks
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Modified by Yuwen Xiong
-# --------------------------------------------------------
-# Based on:
-# MX-RCNN
-# Copyright (c) 2016 by Contributors
-# Licence under The Apache 2.0 License
-# https://github.com/ijkguo/mx-rcnn/
-# --------------------------------------------------------
-
 import mxnet as mx
 import numpy as np
 from config.config import config
 from mxnet.executor_manager import _split_input_slice
-from rcnn import get_rcnn_testbatch, get_rcnn_batch
 from rpn.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor
 from utils.image import tensor_vstack
+
+from rcnn import get_rcnn_testbatch, get_rcnn_batch
 
 
 class TestLoader(mx.io.DataIter):

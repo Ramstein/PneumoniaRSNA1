@@ -1,18 +1,3 @@
-# -*- coding: utf-8 -*-
-"""DenseNet models for Keras.
-
-# Reference paper
-
-- [Densely Connected Convolutional Networks]
-  (https://arxiv.org/abs/1608.06993) (CVPR 2017 Best Paper Award)
-
-# Reference implementation
-
-- [Torch DenseNets]
-  (https://github.com/liuzhuang13/DenseNet/blob/master/models/densenet.lua)
-- [TensorNets]
-  (https://github.com/taehoonlee/tensornets/blob/master/tensornets/densenets.py)
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

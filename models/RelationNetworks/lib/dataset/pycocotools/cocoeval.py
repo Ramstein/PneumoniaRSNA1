@@ -5,8 +5,9 @@ import datetime
 import time
 from collections import defaultdict
 
-import mask
 import numpy as np
+
+import mask
 
 
 class COCOeval:

@@ -14,8 +14,7 @@
 import argparse
 import os
 import sys
-import time
-import logging
+
 from config.config import config, update_config
 
 
@@ -42,7 +41,6 @@ sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VER
 import pprint
 import mxnet as mx
 
-from symbols import *
 from dataset import *
 from core.loader import TestDataLoader
 from core.tester import Predictor, pred_eval
