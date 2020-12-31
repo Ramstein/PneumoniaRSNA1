@@ -11,3 +11,5 @@ toposort==1.6
 pytest==6.2.1
 networkx==2.5
 mxnet-cu100
+pillow==5.0.0
+scipy==1.1.0
