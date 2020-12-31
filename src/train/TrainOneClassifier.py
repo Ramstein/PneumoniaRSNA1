@@ -13,23 +13,19 @@ import memory_saving_gradients
 
 sys.path.insert(0, os.path.join(WDIR, "../grayscale-models"))
 from inception_resnet_v2_gray import InceptionResNetV2
-from mobilenet_v2_gray import MobileNetV2
-from resnet50_gray import ResNet50
-from xception_gray import Xception
 
 from keras.layers import Dropout, Flatten, Dense
 from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
 from keras.engine import Model
-from keras.callbacks import CSVLogger, ModelCheckpoint
+from keras.callbacks import CSVLogger
 from keras import backend as K
-from keras import optimizers, layers, utils
+from keras import optimizers, utils
 
 K.__dict__["gradients"] = memory_saving_gradients.gradients_memory
 
 import pandas as pd
 import numpy as np
 import scipy.misc
-import glob
 
 from scipy.ndimage.interpolation import rotate
 from scipy.ndimage.filters import gaussian_filter

@@ -17,16 +17,17 @@ save_annotations_dir = os.path.join(WDIR, "../../models/RetinaNet/annotations/cl
 def generate_annotations(fold, labels_df=labels_df, concat_images_dir=CONCAT_IMAGES_DIR,
                          save_annotations_dir=save_annotations_dir):
     df = labels_df[labels_df != fold]
-    df["x2"] = df.x + df.width;
+    df["x2"] = df.x + df.width
     df["x2"] = df.x2.astype("int32")
-    df["y2"] = df.y + df.height;
+    df["y2"] = df.y + df.height
     df["y2"] = df.y2.astype("int32")
     df["x"] = df.x.astype("int32")
     df["y"] = df.y.astype("int32")
     df["class"] = "opacity"
     df["filepath"] = [os.path.join(concat_images_dir, "{}.png".format(row.patientId)) for rowNum, row in df.iterrows()]
     df = df[["filepath", "x", "y", "x2", "y2", "class"]]
-    if not os.path.exists(save_annotations_dir): os.makedirs(save_annotations_dir)
+    if not os.path.exists(save_annotations_dir):
+        os.makedirs(save_annotations_dir)
     df.to_csv(os.path.join(save_annotations_dir, "fold{}_train_concat_annotations.csv".format(fold)), index=False,
               header=False)
 

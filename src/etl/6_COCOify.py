@@ -81,8 +81,7 @@ def COCOify(folds_df,
     for i, imgfile in enumerate(all_train_images):
         sys.stdout.write("Processing images: {}/{} ...\r".format(i + 1, len(all_train_images)))
         sys.stdout.flush()
-        tmp_dict = {}
-        tmp_dict["file_name"] = "COCO_{}_{}.png".format(train_prefix, str(i).zfill(12))
+        tmp_dict = {"file_name": "COCO_{}_{}.png".format(train_prefix, str(i).zfill(12))}
         train_image_to_coco_dict[tmp_dict["file_name"]] = imgfile.split("/")[-1]
         os.system("cp {} {}".format(imgfile, os.path.join(save_train_data_dir, tmp_dict["file_name"])))
         tmp_dict["height"] = 1024
@@ -104,13 +103,8 @@ def COCOify(folds_df,
         if tmp_df.shape[0] == 0:
             continue
         for rownum, row in tmp_df.iterrows():
-            tmp_dict = {}
-            tmp_dict["bbox"] = [row["x"], row["y"], row["width"], row["height"]]
-            tmp_dict["image_id"] = i
-            tmp_dict["category_id"] = 1
-            tmp_dict["id"] = counter
-            tmp_dict["area"] = row["width"] * row["height"]
-            tmp_dict["iscrowd"] = 0
+            tmp_dict = {"bbox": [row["x"], row["y"], row["width"], row["height"]], "image_id": i, "category_id": 1,
+                        "id": counter, "area": row["width"] * row["height"], "iscrowd": 0}
             counter += 1
             annots.append(tmp_dict)
     # Assemble into dictionary
@@ -129,8 +123,7 @@ def COCOify(folds_df,
         for i, imgfile in enumerate(all_valid_images):
             sys.stdout.write("Processing images: {}/{} ...\r".format(i + 1, len(all_valid_images)))
             sys.stdout.flush()
-            tmp_dict = {}
-            tmp_dict["file_name"] = "COCO_valid{}_{}.png".format(fold, str(i).zfill(12))
+            tmp_dict = {"file_name": "COCO_valid{}_{}.png".format(fold, str(i).zfill(12))}
             valid_image_to_coco_dict[tmp_dict["file_name"]] = imgfile.split("/")[-1]
             os.system("cp {} {}".format(imgfile, os.path.join(save_valid_data_dir, tmp_dict["file_name"])))
             tmp_dict["height"] = 1024
@@ -152,13 +145,8 @@ def COCOify(folds_df,
             if tmp_df.shape[0] == 0:
                 continue
             for rownum, row in tmp_df.iterrows():
-                tmp_dict = {}
-                tmp_dict["bbox"] = [row["x"], row["y"], row["width"], row["height"]]
-                tmp_dict["image_id"] = i
-                tmp_dict["category_id"] = 1
-                tmp_dict["id"] = counter
-                tmp_dict["area"] = row["width"] * row["height"]
-                tmp_dict["iscrowd"] = 0
+                tmp_dict = {"bbox": [row["x"], row["y"], row["width"], row["height"]], "image_id": i, "category_id": 1,
+                            "id": counter, "area": row["width"] * row["height"], "iscrowd": 0}
                 counter += 1
                 annots.append(tmp_dict)
         # Assemble into dictionary
@@ -190,8 +178,7 @@ def COCOifyTest(test_data_dir,
     for i, imgfile in enumerate(all_test_images):
         sys.stdout.write("Processing images: {}/{} ...\r".format(i + 1, len(all_test_images)))
         sys.stdout.flush()
-        tmp_dict = {}
-        tmp_dict["file_name"] = "COCO_{}_{}.png".format(prefix, str(i).zfill(12))
+        tmp_dict = {"file_name": "COCO_{}_{}.png".format(prefix, str(i).zfill(12))}
         test_image_to_coco_dict[tmp_dict["file_name"]] = imgfile.split("/")[-1]
         os.system("cp {} {}".format(imgfile, os.path.join(save_data_dir, tmp_dict["file_name"])))
         tmp_dict["height"] = 1024
@@ -212,8 +199,6 @@ def COCOifyTest(test_data_dir,
     # 
     with open(os.path.join(save_instances_dir, "image_info_{}.json".format(prefix)), "w") as f:
         json.dump(rsna_test, f)
-
-    ##########
 
 
 # SCRIPT #

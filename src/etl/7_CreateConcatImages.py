@@ -25,6 +25,7 @@ def createConcatImages(folds_df,
                        data_dir,
                        concat_labels_file,
                        concat_img_save_dir):
+    global new_img, tmp_df
     np.random.seed(88)
     labels_df = folds_df.merge(bbox_df, on="patientId")
     concat_img_save_dir = os.path.join(concat_img_save_dir)

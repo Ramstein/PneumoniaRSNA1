@@ -167,6 +167,7 @@ def DenseNet(blocks,
         ValueError: in case of invalid argument for `weights`,
             or invalid input shape.
     """
+    global weights_path
     if not (weights in {'imagenet', None} or os.path.exists(weights)):
         raise ValueError('The `weights` argument should be either '
                          '`None` (random initialization), `imagenet` '

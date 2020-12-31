@@ -12,9 +12,8 @@ WDIR = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
     SETTINGS_JSON = json.load(f)
 
+
 #############
-
-
 # FUNCTIONS #
 #############
 

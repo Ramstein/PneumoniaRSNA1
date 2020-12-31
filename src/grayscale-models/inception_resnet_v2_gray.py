@@ -164,7 +164,7 @@ def inception_resnet_block(x, scale, block_type, block_idx, activation='relu'):
     up = conv2d_bn(mixed,
                    backend.int_shape(x)[channel_axis],
                    1,
-                   activation=None,
+                   activation="",
                    use_bias=True,
                    name=block_name + '_conv')
 
@@ -308,7 +308,7 @@ def InceptionResNetV2(include_top=True,
                                    block_idx=block_idx)
     x = inception_resnet_block(x,
                                scale=1.,
-                               activation=None,
+                               activation="",
                                block_type='block8',
                                block_idx=10)
 

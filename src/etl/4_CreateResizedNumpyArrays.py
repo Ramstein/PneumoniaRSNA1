@@ -40,7 +40,7 @@ def resize_image(img, size, smooth=None):
         resized_img = zoom(img, resize_factor, order=1, prefilter=False)
     if smooth is not None:
         resized_img = gaussian_filter(resized_img, sigma=smooth)
-    l = resized_img.shape[0];
+    l = resized_img.shape[0]
     w = resized_img.shape[1]
     if l != w:
         ldiff = (size - l) / 2
@@ -58,9 +58,10 @@ def resize_images_and_save_as_nparray(list_of_images, in_dir, out_dir, new_size=
     for index, img in enumerate(list_of_images):
         sys.stdout.write("Resizing {}/{} ...\r".format(index + 1, num_images))
         sys.stdout.flush()
-        loaded_img = scipy.misc.imread(os.path.join(in_dir, img), mode="L")
+        # loaded_img = scipy.misc.imread(os.path.join(in_dir, img.decode('utf-8')).encode('utf-8'), mode="L")
+        loaded_img = scipy.misc.imread(os.path.join(in_dir.encode('utf-8'), img), mode="L")
         resized_img = resize_image(loaded_img, new_size)
-        np.save(os.path.join(out_dir, img.replace("png", "npy")), resized_img)
+        np.save(os.path.join(out_dir, img.replace("png".encode('utf-8'), "npy".encode('utf-8')).decode()), resized_img)
 
 
 def pad_image(img, size, smooth=None):
@@ -79,7 +80,7 @@ def pad_image(img, size, smooth=None):
         resized_img = img.copy()
     if smooth is not None:
         resized_img = gaussian_filter(resized_img, sigma=smooth)
-    l = resized_img.shape[0];
+    l = resized_img.shape[0]
     w = resized_img.shape[1]
     ldiff = (size - l) / 2
     wdiff = (size - w) / 2
@@ -99,8 +100,6 @@ def pad_images_and_save_as_nparray(list_of_images, in_dir, out_dir, new_size=256
         loaded_img = scipy.misc.imread(os.path.join(in_dir, img), mode="L")
         resized_img = pad_image(loaded_img, new_size)
         np.save(os.path.join(out_dir, img.split(".")[0] + ".npy"), resized_img)
-
-    ##########
 
 
 # SCRIPT #
