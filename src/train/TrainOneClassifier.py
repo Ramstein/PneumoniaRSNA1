@@ -503,7 +503,7 @@ if __name__ == "__main__":
     model_name = "InceptionResNetV2_1024"
     base_model = InceptionResNetV2
     input_size = 1024
-    subepochs = 20
+    subepochs = 40
     fold = 0
     batch_size = 8
     base_lr = 5e-5
