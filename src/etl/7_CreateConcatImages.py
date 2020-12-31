@@ -44,6 +44,7 @@ def createConcatImages(folds_df,
     train_labels_df = pd.DataFrame()
     train_file_paths = []
     for i, neg_img in enumerate(neg_images):
+        # if i < 19703: continue
         sys.stdout.write("[TRAIN] Processing : {}/{} ...".format(i + 1, len(neg_images)))
         neg_img_id = neg_img.split("/")[-1].split(".")[0]
         neg_img_fold = labels_df[labels_df.patientId == neg_img_id].fold.iloc[0]

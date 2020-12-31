@@ -12,9 +12,7 @@ sys.path.insert(0, os.path.join(WDIR, "gradient-checkpointing"))
 import memory_saving_gradients
 
 sys.path.insert(0, os.path.join(WDIR, "../grayscale-models"))
-from inception_resnet_v2_gray import InceptionResNetV2
 from densenet_gray import DenseNet169
-from xception_gray import Xception
 
 from keras.layers import Dropout, Flatten, Dense
 from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
@@ -51,6 +49,7 @@ def get_model(base_model,
               pooling="avg",
               weights=None,
               pretrained="imagenet"):
+    global x
     base = base_model(input_shape=input_shape,
                       include_top=False,
                       weights=pretrained,
@@ -307,8 +306,7 @@ def load_and_validate(val_results_dict,
     # Memory requirements may prevent all validation data from being
     # loaded at once 
     # NOTE: data is NOT preprocessed
-    print
-    ">>VALIDATING<<\n"
+    print(">>VALIDATING<<\n")
     X_val = np.asarray([np.load(os.path.join(data_dir, "{}.npy".format(_))) for _ in valid_df.patientId])
     if clahe:
         X_val = np.asarray([apply_clahe(_) for _ in X_val])
@@ -332,7 +330,7 @@ def train(df, fold,
           data_dir,
           mode="weighted_loss",
           clahe=False,
-          lr_schedule=[20, 10, 2],
+          lr_schedule=None,
           load_validation_data=True,
           validate_every_nth_epoch=5,
           resume=0,
@@ -345,6 +343,9 @@ def train(df, fold,
     #   - index 0: "ReduceLROnPlateau"
     #   - index 1: annealing_factor 
     #   - index 2: patience
+    if lr_schedule is None:
+        lr_schedule = [20, 10, 2]
+    global train_images, pos_train_images, z_pos, z_neg, neg_train_images, X_train, y_train, class_weight_dict, X_val
     if not os.path.exists(save_weights_path):
         os.makedirs(save_weights_path)
     if not os.path.exists(save_logs_path):
@@ -355,15 +356,13 @@ def train(df, fold,
     valid_df = df[(df.fold == fold)]
     # Load the validation data if specified
     if load_validation_data:
-        print
-        "Loading validation data ..."
+        print("Loading validation data ...")
         X_val = np.asarray([np.load(os.path.join(data_dir, "{}.npy".format(_))) for _ in valid_df.patientId])
         if clahe:
             X_val = np.asarray([apply_clahe(_) for _ in X_val])
         X_val = np.expand_dims(X_val, axis=-1)
         # X_val = preprocess_input(X_val, model_name)
-        print
-        "DONE !"
+        print("DONE !")
     valid_ids = np.asarray(list(valid_df["patientId"]))
     y_val = np.asarray(list(valid_df["label"]))
     valid_views = np.asarray(list(valid_df["view"]))
@@ -410,8 +409,7 @@ def train(df, fold,
         suffix = str(each_subepoch).zfill(3)
         logs_path = os.path.join(save_logs_path, "log_subepoch_{}.csv".format(suffix))
         csvlogger = CSVLogger(logs_path)
-        print
-        "Loading training sample ..."
+        print("Loading training sample ...")
         if mode == "weighted_loss":
             X_train, y_train, z = load_sample_and_labels(train_df, train_images, num_train_samples, z)
             class_weight_dict = {}
@@ -431,8 +429,7 @@ def train(df, fold,
         if clahe:
             X_train = np.asarray([apply_clahe(_) for _ in X_train])
         X_train = np.expand_dims(X_train, axis=-1)
-        print
-        "Augmenting training data ..."
+        print("Augmenting training data ...")
         for index, each_image in enumerate(X_train):
             sys.stdout.write("{}/{} ...\r".format(index + 1, len(X_train)))
             sys.stdout.flush()
@@ -443,7 +440,7 @@ def train(df, fold,
             if np.random.binomial(1, augment_p):
                 X_train[index] = data_augmentation(each_image)
         X_train = preprocess_input(X_train, model_name)
-        print("\nDONE !")
+        print("DONE !")
         if mode == "weighted_loss":
             model.fit(X_train, y_train,
                       batch_size=batch_size, epochs=1,
@@ -499,6 +496,7 @@ with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
 df = pd.read_csv(os.path.join(WDIR, "../..", SETTINGS_JSON["TRAIN_INFO_DIR"], "stratified_folds_df.csv"))
 df["label"] = [1 if _ == "Lung Opacity" else 0 for _ in df["class"]]
 
+"""
 #####################
 # InceptionResNetV2 #
 #####################
@@ -594,12 +592,11 @@ train(df, fold, model, model_name, 20, 8, 5e-5, 0.5,
       os.path.join(fold_save_dir, "l0/val-results/"),
       os.path.join(WDIR, "../../", SETTINGS_JSON["TRAIN_IMAGES_CLEAN_DIR"], "resized/i{}/".format(input_size)),
       mode="weighted_loss",
-      llr_schedule=[6, 3, 2.],
+      lr_schedule=[6, 3, 2.],
       validate_every_nth_epoch=2,
       load_validation_data=False,
       num_train_samples=8000)
 
-###
 
 df = pd.read_csv(os.path.join(WDIR, "../..", SETTINGS_JSON["TRAIN_INFO_DIR"], "stage_1_stratified_folds_df.csv"))
 df["label"] = None
@@ -692,6 +689,7 @@ train(df, fold, model, model_name, 20, 8, 5e-5, 0.5,
       validate_every_nth_epoch=2,
       load_validation_data=False,
       num_train_samples=8000)
+"""
 
 ###############
 # DenseNet169 #
@@ -699,17 +697,20 @@ train(df, fold, model, model_name, 20, 8, 5e-5, 0.5,
 fold = 9
 input_size = 512
 fold_save_dir = os.path.join(WDIR, "../../models/classifiers/snapshots/multiclass/DenseNet169/fold{}".format(fold))
-model = get_model(DenseNet169, 0, 5e-5, classes=3, activation="softmax", dropout=None,
+model = get_model(base_model=DenseNet169, layer=0, lr=5e-5, classes=3, activation="softmax", dropout=0.2,
                   input_shape=(input_size, input_size, 1),
                   pretrained=os.path.join(WDIR, "../../models/pretrained/DenseNet169_NIH15_Px448.h5"))
 model_name = "densenet"
-train(df, fold, model, model_name, 20, 8, 5e-5, 0.5,
-      os.path.join(fold_save_dir, "l0/weights/"),
-      os.path.join(fold_save_dir, "l0/logs/"),
-      os.path.join(fold_save_dir, "l0/val-results/"),
-      os.path.join(WDIR, "../../", SETTINGS_JSON["TRAIN_IMAGES_CLEAN_DIR"], "resized/i{}/".format(input_size)),
+
+train(df=df, fold=fold,
+      model=model, model_name=model_name,
+      subepochs=20, batch_size=8, base_lr=5e-5, augment_p=0.5,
+      save_weights_path=os.path.join(fold_save_dir, "l0/weights/"),
+      save_logs_path=os.path.join(fold_save_dir, "l0/logs/"),
+      val_results_path=os.path.join(fold_save_dir, "l0/val-results/"),
+      data_dir=os.path.join(WDIR, "../../", SETTINGS_JSON["TRAIN_IMAGES_CLEAN_DIR"], "resized/i{}/".format(input_size)),
       mode="weighted_loss",
       lr_schedule=[6, 3, 2.],
-      validate_every_nth_epoch=2,
       load_validation_data=False,
+      validate_every_nth_epoch=2,
       num_train_samples=8000)
