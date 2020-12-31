@@ -3,6 +3,10 @@ import os
 
 import numpy as np
 import pandas as pd
+from pyreadline import execfile
+
+from src.infer.ExtractDeformableTTA import MAPPINGS_PATH, test_image_set, METADATA_PATH, RFCN_DETS_DIR, RCNN0_DETS_DIR, \
+    RCNN1_DETS_DIR
 
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,6 +67,7 @@ metadata = pd.read_csv(METADATA_PATH)
 
 
 def get_TTA_results(fold_imsize, test_image_set, MAIN_DIR):
+    global tmp_df
     TTAs = []
     for test_set in [test_image_set, "{}_flip".format(test_image_set)]:
         for suffix in ["original", "scale080", "scale120"]:
@@ -86,7 +91,7 @@ def get_TTA_results(fold_imsize, test_image_set, MAIN_DIR):
     return TTAs
 
 
-execfile(os.path.join(WDIR, "DetectionEnsemble.py"))
+execfile(os.path.join(WDIR, "DetectionEnsemble.py"), glob=None)
 
 
 def run_ensemble(list_of_dfs, metadata, adjust_score=True):
@@ -105,6 +110,7 @@ def run_ensemble(list_of_dfs, metadata, adjust_score=True):
                 bbox.append(row.score)
                 list_of_bboxes.append(bbox)
             list_of_detections.append(list_of_bboxes)
+        from src.infer.DetectionEnsemble import GeneralEnsemble
         list_of_ensemble_bboxes.append(GeneralEnsemble(list_of_detections, iou_thresh=0.4))
         list_of_pids.append(pid)
         # Create new DataFrame

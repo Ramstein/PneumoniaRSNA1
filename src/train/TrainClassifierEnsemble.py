@@ -1,27 +1,21 @@
-###########
-# IMPORTS #
-###########
 import json
 import os
-
-WDIR = os.path.dirname(os.path.abspath(__file__))
-
 import sys
 
-sys.path.insert(0, os.path.join(WDIR, "gradient-checkpointing"))
-import memory_saving_gradients
-
-sys.path.insert(0, os.path.join(WDIR, "../grayscale-models"))
-from densenet_gray import DenseNet169
-
-from keras.layers import Dropout, Flatten, Dense
-from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
-from keras.engine import Model
-from keras.callbacks import CSVLogger
+import tensorflow as tf
 from keras import backend as K
 from keras import optimizers, utils
+from keras.callbacks import CSVLogger
+from keras.engine import Model
+from keras.layers import Dropout, Flatten, Dense
+from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
 
-import tensorflow as tf
+from src.GrayscaleModels.densenet_gray import DenseNet169
+from src.train.GradientCheckpointing import memory_saving_gradients
+
+WDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(WDIR, "GradientCheckpointing"))
+sys.path.insert(0, os.path.join(WDIR, "../GrayscaleModels"))
 
 K.__dict__["gradients"] = memory_saving_gradients.gradients_memory
 
@@ -36,10 +30,6 @@ from skimage import exposure
 
 from sklearn.metrics import roc_auc_score, cohen_kappa_score, accuracy_score, f1_score
 
-
-################
-# KERAS MODELS #
-################
 
 def get_model(base_model,
               layer,

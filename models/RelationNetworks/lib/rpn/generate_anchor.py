@@ -1,6 +1,3 @@
-
-
-
 """
 Generate base anchors on index 0
 """

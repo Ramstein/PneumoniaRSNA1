@@ -32,10 +32,6 @@ TRAIN_IMAGES_DIR = args.TRAIN_IMAGES_DIR
 TEST_IMAGES_DIR = args.TEST_IMAGES_DIR
 FOLDS_DF_PATH = args.FOLDS_DF_PATH
 
-###########
-# IMPORTS #
-###########
-
 import pandas as pd
 import json
 import glob

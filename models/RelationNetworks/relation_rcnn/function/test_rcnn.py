@@ -1,6 +1,3 @@
-
-
-
 import pprint
 
 from core.loader import TestLoader

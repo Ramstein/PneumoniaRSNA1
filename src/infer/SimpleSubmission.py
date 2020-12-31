@@ -67,11 +67,9 @@ predict_box = predict_box_dcn
 predict_box = predict_box.merge(metadata[["patientId", "view"]])
 predict_box["doubleScore"] = predict_box.adjustedScore
 for thres in np.linspace(0.05, 0.95, 37):
-    print
-    "{0:.3f} : {1}p // {2}b".format(thres,
-                                    len(np.unique(predict_box.patientId[predict_box.doubleScore >= thres])),
-                                    np.sum(predict_box.doubleScore >= thres))
-
+    print("{0:.3f} : {1}p // {2}b".format(thres,
+                                          len(np.unique(predict_box.patientId[predict_box.doubleScore >= thres])),
+                                          np.sum(predict_box.doubleScore >= thres)))
 predict_box = predict_box[predict_box.doubleScore >= 0.275]
 
 list_of_pids = []

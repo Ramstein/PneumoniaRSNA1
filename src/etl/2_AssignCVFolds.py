@@ -1,7 +1,3 @@
-###########
-# IMPORTS #
-###########
-
 import json
 import os
 

@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 import warnings
 
+from keras.applications import imagenet_utils
 from keras_applications import get_keras_submodule
 
 backend = get_keras_submodule('backend')
@@ -12,10 +14,6 @@ engine = get_keras_submodule('engine')
 layers = get_keras_submodule('layers')
 models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
-
-from keras.applications import imagenet_utils
-
-import sys
 
 sys.path.insert(0, ".")
 
@@ -84,6 +82,7 @@ def Xception(include_top=True,
         RuntimeError: If attempting to run this model with a
             backend that does not support separable convolutions.
     """
+    global weights_path
     if not (weights in {'imagenet', None} or os.path.exists(weights)):
         raise ValueError('The `weights` argument should be either '
                          '`None` (random initialization), `imagenet` '

@@ -5,6 +5,8 @@ import re
 import numpy as np
 import pandas as pd
 
+from src.infer.ExtractDeformableTTA import MAPPINGS_PATH, test_image_set, METADATA_PATH, RCNN0_DETS_DIR
+
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -106,6 +108,7 @@ def run_ensemble(list_of_dfs, metadata, adjust_score=True):
                 bbox.append(row.score)
                 list_of_bboxes.append(bbox)
             list_of_detections.append(list_of_bboxes)
+        from src.infer.DetectionEnsemble import GeneralEnsemble
         list_of_ensemble_bboxes.append(GeneralEnsemble(list_of_detections, iou_thresh=0.4))
         list_of_pids.append(pid)
         # Create new DataFrame

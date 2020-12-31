@@ -5,5 +5,5 @@
   "RAW_TEST_DICOMS_DIR": "../PneumoniaData/test_dicoms/",
   "TRAIN_IMAGES_CLEAN_DIR": "../PneumoniaData/train_images/",
   "TEST_IMAGES_CLEAN_DIR": "../PneumoniaData/test_images/",
-  "SUBMISSION_DIR": "."
+  "SUBMISSION_DIR": "../PneumoniaData/submission/"
 }

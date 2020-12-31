@@ -10,7 +10,7 @@ WDIR = os.path.dirname(os.path.abspath(__file__))
 
 import sys
 
-sys.path.insert(0, os.path.join(WDIR, "../../../../src/train/gradient-checkpointing/"))
+sys.path.insert(0, os.path.join(WDIR, "../../../../src/train/GradientCheckpointing/"))
 sys.path.append(os.path.join(WDIR, "../../"))
 import memory_saving_gradients
 

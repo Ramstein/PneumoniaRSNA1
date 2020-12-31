@@ -3,18 +3,16 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 
 from keras_applications import get_keras_submodule
+from keras_applications import imagenet_utils
 
 backend = get_keras_submodule('backend')
 engine = get_keras_submodule('engine')
 layers = get_keras_submodule('layers')
 models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
-
-from keras_applications import imagenet_utils
-
-import sys
 
 sys.path.insert(0, ".")
 

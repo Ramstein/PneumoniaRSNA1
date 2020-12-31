@@ -68,7 +68,7 @@ formats.
 
 In `$TOP/.keras/keras.json` you will find the Keras configuration we used to train some of our models. We adapted the
 Keras code for existing model architectures to accept grayscale (1-channel) input. You can find this code
-in `src/grayscale-models/`.
+in `src/GrayscaleModels/`.
 
 To train all models in the ensemble:
 

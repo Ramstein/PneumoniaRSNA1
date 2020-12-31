@@ -1,45 +1,32 @@
-###########
-# IMPORTS #
-###########
-
 import json
 import os
+import sys
+
+import numpy as np
+import pandas as pd
+import scipy.misc
+import tensorflow as tf
+from keras import backend as K
+from keras import optimizers, utils
+from keras.callbacks import CSVLogger
+from keras.engine import Model
+from keras.layers import Dropout, Flatten, Dense
+from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
+from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import rotate
+from skimage import exposure
+from sklearn.metrics import roc_auc_score, cohen_kappa_score, accuracy_score, f1_score
+
+from src.GrayscaleModels.inception_resnet_v2_gray import InceptionResNetV2
+from src.train.GradientCheckpointing import memory_saving_gradients
 
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
-import sys
-import tensorflow as tf
-
-sys.path.insert(0, os.path.join(WDIR, "gradient-checkpointing"))
-import memory_saving_gradients
-
-sys.path.insert(0, os.path.join(WDIR, "../grayscale-models"))
-from inception_resnet_v2_gray import InceptionResNetV2
-
-from keras.layers import Dropout, Flatten, Dense
-from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
-from keras.engine import Model
-from keras.callbacks import CSVLogger
-from keras import backend as K
-from keras import optimizers, utils
+sys.path.insert(0, os.path.join(WDIR, "GradientCheckpointing"))
+sys.path.insert(0, os.path.join(WDIR, "../GrayscaleModels"))
 
 K.__dict__["gradients"] = memory_saving_gradients.gradients_memory
 
-import pandas as pd
-import numpy as np
-import scipy.misc
-
-from scipy.ndimage.interpolation import rotate
-from scipy.ndimage.filters import gaussian_filter
-
-from skimage import exposure
-
-from sklearn.metrics import roc_auc_score, cohen_kappa_score, accuracy_score, f1_score
-
-
-################
-# KERAS MODELS #
-################
 
 def get_model(base_model,
               layer,
@@ -51,6 +38,7 @@ def get_model(base_model,
               pooling="avg",
               weights=None,
               pretrained="imagenet"):
+    global x
     base = base_model(input_shape=input_shape,
                       include_top=False,
                       weights=pretrained,
@@ -345,7 +333,7 @@ def train(df, fold,
     #   - index 0: "ReduceLROnPlateau"
     #   - index 1: annealing_factor 
     #   - index 2: patience
-    global train_images, pos_train_images, z_pos, z_neg, neg_train_images, X_train, y_train, class_weight_dict, X_val
+    global train_images, pos_train_images, z_pos, z_neg, neg_train_images, X_train, y_train, class_weight_dict, X_val, z
     if lr_schedule is None:
         lr_schedule = [20, 10, 2]
     if not os.path.exists(save_weights_path):

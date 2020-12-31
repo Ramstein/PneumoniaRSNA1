@@ -1,6 +1,3 @@
-
-
-
 """
 Fast R-CNN:
 data =

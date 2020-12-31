@@ -1,10 +1,24 @@
 # Specify GPU 
+import glob
 import json
 import os
+import sys
+
+import numpy as np
+import pandas as pd
+import scipy.misc
+from keras import optimizers
+from keras.engine import Model
+from keras.layers import Dropout, Flatten, Dense
+from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
+from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import zoom, rotate
+from skimage import exposure
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 WDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(WDIR, "../GrayscaleModels"))
 
 with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
     SETTINGS_JSON = json.load(f)
@@ -12,39 +26,6 @@ with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
 BINARY_MODELS_DIR = os.path.join(WDIR, "../../models/one_classifier/binary/")
 TEST_IMAGES_DIR = os.path.join(WDIR, "../../", SETTINGS_JSON["TEST_IMAGES_CLEAN_DIR"], "orig")
 
-###########
-# IMPORTS #
-###########
-
-import sys
-
-sys.path.insert(0, os.path.join(WDIR, "../grayscale-models"))
-from inception_resnet_v2_gray import InceptionResNetV2
-from mobilenet_v2_gray import MobileNetV2
-from resnet50_gray import ResNet50
-
-from keras.layers import Dropout, Flatten, Dense, Input, Concatenate
-from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
-from keras.engine import Model
-from keras.callbacks import CSVLogger, ModelCheckpoint
-from keras import backend as K
-from keras import optimizers, layers
-
-import pandas as pd
-import numpy as np
-import scipy.misc
-import glob
-import os
-
-from scipy.ndimage.interpolation import zoom, rotate
-from scipy.ndimage.filters import gaussian_filter
-
-from skimage import exposure
-
-
-################
-# KERAS MODELS #
-################
 
 def get_model(base_model,
               layer,
@@ -56,6 +37,7 @@ def get_model(base_model,
               pooling="avg",
               weights=None,
               pretrained=None):
+    global x
     base = base_model(input_shape=input_shape,
                       include_top=False,
                       weights=pretrained,

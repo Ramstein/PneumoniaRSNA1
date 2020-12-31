@@ -1,6 +1,10 @@
 import json
 import os
 
+from pyreadline import execfile
+
+from src.infer.DetectionEnsemble import GeneralEnsemble
+
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
@@ -101,7 +105,7 @@ predict_box_ret1["w"] = [box[2] for box in resized_bboxes]
 predict_box_ret1["h"] = [box[3] for box in resized_bboxes]
 
 # Ensemble the two RetinaNets
-execfile(os.path.join(WDIR, "DetectionEnsemble.py"))
+execfile(os.path.join(WDIR, "DetectionEnsemble.py"), glob=None)
 
 list_of_dfs = [predict_box_ret0, predict_box_ret1]
 
@@ -188,10 +192,9 @@ predict_box = predict_box.merge(metadata[["patientId", "view"]])
 predict_box = predict_box[["patientId", "x", "y", "w", "h", "score", "votes", "view"]]
 predict_box["doubleScore"] = predict_box.score * (predict_box.votes / len(list_of_dfs))
 for thres in np.linspace(0.05, 0.95, 37):
-    print
-    "{0:.3f} : {1}p // {2}b".format(thres,
-                                    len(np.unique(predict_box.patientId[predict_box.doubleScore >= thres])),
-                                    np.sum(predict_box.doubleScore >= thres))
+    print("{0:.3f} : {1}p // {2}b".format(thres,
+                                          len(np.unique(predict_box.patientId[predict_box.doubleScore >= thres])),
+                                          np.sum(predict_box.doubleScore >= thres)))
 
 predict_box = predict_box[predict_box.doubleScore >= 0.15]
 

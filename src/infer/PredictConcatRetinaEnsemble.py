@@ -1,10 +1,23 @@
 # Specify GPU 
+import glob
 import json
 import os
+import re
+import sys
+
+import numpy as np
+import scipy.misc
+from pyreadline import execfile
+from scipy.ndimage.interpolation import zoom
+
+from models.RetinaNet.keras_retinanet.models import load_model
+# Specify GPU (if needed)
+from src.infer.DetectionEnsemble import GeneralEnsemble
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 WDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(WDIR, "../../models/RetinaNet/"))
 
 with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
     SETTINGS_JSON = json.load(f)
@@ -12,23 +25,8 @@ with open(os.path.join(WDIR, "../../SETTINGS.json")) as f:
 TEST_IMAGES_DIR = os.path.join(WDIR, "../../", SETTINGS_JSON["TEST_IMAGES_CLEAN_DIR"], "orig")
 MODELS_DIR = os.path.join(WDIR, "../../models/RetinaNet/output/cloud/")
 
-import sys
-
-sys.path.append(os.path.join(WDIR, "../../models/RetinaNet/"))
-from keras_retinanet.models import load_model
-from scipy.ndimage.interpolation import zoom
-
-import numpy as np
-import scipy.misc
-import glob
-import os
-import re
-
-# Specify GPU (if needed)
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-
 # Get functions for ensembling object detections
-execfile(os.path.join(WDIR, "DetectionEnsemble.py"))
+execfile(os.path.join(WDIR, "DetectionEnsemble.py"), glob=None)
 
 MODEL0_PATH = os.path.join(MODELS_DIR, "fold0_384_resnet101_csv_06.h5")
 MODEL1_PATH = os.path.join(MODELS_DIR, "fold1_384_resnet152_csv_03.h5")
@@ -119,9 +117,9 @@ for imgIndex, imgfile in enumerate(test_images):
             bboxes0 = prediction0[0][0][:10] / scale
             bboxes1 = prediction1[0][0][:10] / scale
             bboxes1 = [flip_box(_) for _ in bboxes1]
-            scores0 = prediction0[1][0][:10];
+            scores0 = prediction0[1][0][:10]
             scores0 = np.clip(scores0, 0, 1)
-            scores1 = prediction1[1][0][:10];
+            scores1 = prediction1[1][0][:10]
             scores1 = np.clip(scores1, 0, 1)
             # Convert boxes to [x, y, w, h] 
             bboxes0 = [[box[0], box[1], box[2] - box[0], box[3] - box[1]] for box in bboxes0]

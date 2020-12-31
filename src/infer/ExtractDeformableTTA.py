@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 
+from pyreadline import execfile
+
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser()
@@ -30,8 +32,8 @@ METADATA_PATH = os.path.join(WDIR, "../../", SETTINGS_JSON["TEST_INFO_DIR"], "te
 WDIR = os.path.dirname(os.path.abspath(__file__))
 
 if args.MODE == "complete":
-    execfile(os.path.join(WDIR, "_ExtractDeformableTTA.py"))
+    execfile(os.path.join(WDIR, "_ExtractDeformableTTA.py"), glob=None)
 elif args.MODE == "simple":
-    execfile(os.path.join(WDIR, "_ExtractSimpleDeformTTA.py"))
+    execfile(os.path.join(WDIR, "_ExtractSimpleDeformTTA.py"), glob=None)
 else:
     raise (Exception("MODE must be one of: [simple, complete]"))
