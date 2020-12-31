@@ -445,12 +445,12 @@ def train(df, fold,
         print("DONE !")
         if mode == "weighted_loss":
             model.fit(X_train, y_train,
-                      batch_size=batch_size, epochs=1,
+                      batch_size=batch_size, epochs=5,
                       shuffle=True, callbacks=[csvlogger],
                       class_weight=class_weight_dict)
         elif mode == "sample_equally":
             model.fit(X_train, y_train,
-                      batch_size=batch_size, epochs=1,
+                      batch_size=batch_size, epochs=5,
                       shuffle=True, callbacks=[csvlogger])
         ##### VALIDATE #####
         if (each_subepoch + 1) % validate_every_nth_epoch == 0:
